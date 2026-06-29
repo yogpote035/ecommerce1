@@ -1,0 +1,95 @@
+Ecommerce Project Maintenance Checklist
+====================================
+
+1. Server Requirements
+- PHP 7 or newer
+- Apache web server
+- MySQL/MariaDB
+- XAMPP recommended
+- Place project in: C:\xampp\htdocs\ecommerce1
+
+2. Database Setup
+- Create databases: ecommerce and retailler
+- Import the SQL from setup.sql
+- Ensure MySQL user is root with empty password, or update connection files
+
+3. Main Files to Review
+- index.php -> customer product page
+- Alogin1.php -> admin login/register
+- Cllogin.php / Clogin.php -> customer login page
+- Aadd.php -> add product by admin
+- Radd.php -> add product by retailer
+- ins.php -> order insertion
+- view_cart.php -> cart handling
+- checkout.php -> checkout process
+
+4. Required Tables
+Database ecommerce:
+- apadd (product records for admin products)
+- aregister (admin users)
+- cregister (customer users)
+
+Database retailler:
+- rpadd (retailer products)
+- rregister (retailer users)
+- product (customer product catalog)
+- orders (order tracking)
+
+5. Required Form Fields
+These are the fields actually used by the current PHP handlers:
+
+Admin product form:
+- Apid
+- apname
+- apbrand
+- apcategory
+- apqty
+- apprice
+- apimage
+
+Admin login/register:
+- aname
+- aadd
+- apass
+
+Customer login/register:
+- Login uses: Cid, Cpass
+- Register uses: Cid, Cname, Cadd, Ccontact, Cpass, Cconpass
+- Older/alternate register handler also uses Cemail
+
+Retailer product form:
+- rpid
+- rpname
+- rpbrand
+- rpqty
+- rpprice
+
+Retailer login/register:
+- Login uses: rname, rpass
+- Register uses: rname, radd, rpass
+- One older handler also expects rconpass
+
+Order form:
+- Oid
+- pid
+- Cid
+- cost
+- Source
+- Destination
+
+6. Important Note About Extra/Legacy Fields
+The project has several older or duplicate PHP files that use slightly different field names and table names. For maintenance, these are the main inconsistencies:
+- Customer registration is handled by more than one file with different field names.
+- Some files insert into Cregister while others insert into cregister.
+- Some retailer registration files expect rconpass while the main insert does not.
+- These inconsistencies should be fixed if you want one stable version of the project.
+
+6. File Upload Folder
+- Create folder: uploads/
+- Ensure writable permissions
+
+7. Common Maintenance Notes
+- The project uses hard-coded DB credentials in several files.
+- Some files use different database names and passwords; keep them consistent.
+- If you move the project to another server, update connection details in each PHP file.
+- For production, use prepared statements and password hashing.
