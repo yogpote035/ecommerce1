@@ -342,7 +342,7 @@ class CategoryHelper {
         }
 
         $stmt = $this->db->prepare(
-            'SELECT s.id, s.name, s.slug, s.description, s.sub_category_id, s.category_id, c.name AS category_name, c.slug AS category_slug FROM sub_categories s INNER JOIN categories c ON c.id = s.category_id WHERE s.slug = ? AND s.is_active = 1 AND c.is_active = 1 LIMIT 1'
+            'SELECT s.id, s.name, s.slug, s.description, s.category_id, c.name AS category_name, c.slug AS category_slug FROM sub_categories s INNER JOIN categories c ON c.id = s.category_id WHERE s.slug = ? AND s.is_active = 1 AND c.is_active = 1 ORDER BY c.name ASC, s.name ASC LIMIT 1'
         );
         if (!$stmt) {
             return $this->findSubcategoryBySlug($slug);
@@ -379,6 +379,58 @@ class CategoryHelper {
             return $this->getAllProducts();
         }
 
+        $category = $this->getCategoryById((int) $categoryId);
+        if (!$category || empty($category['name'])) {
+            return [];
+        }
+
+        $categoryName = $category['name'];
+        $subcategoryName = '';
+        if (!empty($subId)) {
+            $subcategory = $this->getSubcategoryById((int) $subId);
+            $subcategoryName = $subcategory['name'] ?? '';
+        }
+
+        if ($subcategoryName !== '') {
+            $sql = 'SELECT * FROM apadd WHERE apcategory = ? OR apcategory LIKE ? ORDER BY Apid DESC';
+            $categoryValue = $categoryName . ' > ' . $subcategoryName;
+            $categoryLike = $categoryName . ' > %';
+            $stmt = $this->db->prepare($sql);
+            if (!$stmt) {
+                return [];
+            }
+
+            mysqli_stmt_bind_param($stmt, 'ss', $categoryValue, $categoryLike);
+            mysqli_stmt_execute($stmt);
+            $result = mysqli_stmt_get_result($stmt);
+            $targetSlug = $this->looseSlug($subcategory['slug'] ?? $subcategoryName);
+            $products = $this->normalizeProducts(array_filter(mysqli_fetch_all($result, MYSQLI_ASSOC), function ($row) use ($categoryName, $subcategoryName, $targetSlug) {
+                $categoryValue = (string) ($row['apcategory'] ?? '');
+                if (strcasecmp($categoryValue, $categoryName . ' > ' . $subcategoryName) === 0) {
+                    return true;
+                }
+                $parts = array_map('trim', explode('>', $categoryValue));
+                $rowSubcategory = $parts[1] ?? '';
+                return $rowSubcategory !== '' && $this->looseSlug($rowSubcategory) === $targetSlug;
+            }));
+            mysqli_stmt_close($stmt);
+            return $products;
+        }
+
+        $sql = 'SELECT * FROM apadd WHERE apcategory = ? OR apcategory LIKE ? ORDER BY Apid DESC';
+        $categoryLike = $categoryName . ' > %';
+        $stmt = $this->db->prepare($sql);
+        if (!$stmt) {
+            return [];
+        }
+
+        mysqli_stmt_bind_param($stmt, 'ss', $categoryName, $categoryLike);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $products = $this->normalizeProducts(mysqli_fetch_all($result, MYSQLI_ASSOC));
+        mysqli_stmt_close($stmt);
+        return $products;
+
         if ($this->hasSchema && $this->hasColumn('apadd', 'category_id')) {
             $sql = 'SELECT p.* FROM apadd p WHERE p.category_id = ?';
             $types = 'i';
@@ -410,11 +462,6 @@ class CategoryHelper {
             return $products;
         }
 
-        $category = $this->getCategoryById($categoryId);
-        if (!$category || empty($category['name'])) {
-            return [];
-        }
-
         $sql = 'SELECT * FROM apadd WHERE apcategory = ? ORDER BY Apid DESC';
         $stmt = $this->db->prepare($sql);
         if (!$stmt) {
@@ -424,7 +471,7 @@ class CategoryHelper {
         mysqli_stmt_bind_param($stmt, 's', $category['name']);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
-        $products = mysqli_fetch_all($result, MYSQLI_ASSOC);
+        $products = $this->normalizeProducts(mysqli_fetch_all($result, MYSQLI_ASSOC));
         mysqli_stmt_close($stmt);
         return $products;
     }
@@ -437,9 +484,42 @@ class CategoryHelper {
 
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
-        $products = mysqli_fetch_all($result, MYSQLI_ASSOC);
+        $products = $this->normalizeProducts(mysqli_fetch_all($result, MYSQLI_ASSOC));
         mysqli_stmt_close($stmt);
         return $products;
+    }
+
+    public function getSubcategoryById($subcategoryId) {
+        if (empty($subcategoryId)) {
+            return null;
+        }
+
+        if (!$this->hasSchema) {
+            foreach ($this->fallbackCategories as $category) {
+                foreach ($category['subcategories'] as $subcategory) {
+                    if ((int) $subcategory['id'] === (int) $subcategoryId) {
+                        return array_merge($subcategory, [
+                            'category_id' => $category['id'],
+                            'category_name' => $category['name'],
+                            'category_slug' => $category['slug'],
+                        ]);
+                    }
+                }
+            }
+            return null;
+        }
+
+        $stmt = $this->db->prepare('SELECT id, name, slug, category_id FROM sub_categories WHERE id = ? AND is_active = 1 LIMIT 1');
+        if (!$stmt) {
+            return null;
+        }
+
+        mysqli_stmt_bind_param($stmt, 'i', $subcategoryId);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $subcategory = mysqli_fetch_assoc($result) ?: null;
+        mysqli_stmt_close($stmt);
+        return $subcategory ?: $this->findSubcategoryById($subcategoryId);
     }
 
     public function getCategoryById($categoryId) {
@@ -479,6 +559,34 @@ class CategoryHelper {
         mysqli_stmt_fetch($stmt);
         mysqli_stmt_close($stmt);
         return $count > 0;
+    }
+
+    private function normalizeProducts(array $rows) {
+        return array_values(array_filter(array_map(function ($row) {
+            $productId = (int) ($row['Apid'] ?? $row['id'] ?? 0);
+            $productName = trim((string) ($row['apname'] ?? $row['name'] ?? ''));
+            if ($productId <= 0 || $productName === '') {
+                return null;
+            }
+
+            return [
+                'id' => $productId,
+                'name' => $productName,
+                'price' => $row['apprice'] ?? $row['price'] ?? 0,
+                'image' => !empty($row['apimage']) ? $row['apimage'] : (!empty($row['Apimage']) ? $row['Apimage'] : 'images/products/accessories.jpg'),
+                'rating' => $row['aprating'] ?? $row['rating'] ?? 0,
+                'brand' => $row['apbrand'] ?? $row['brand'] ?? '',
+                'category' => $row['apcategory'] ?? $row['category'] ?? '',
+                'stock' => $row['apqty'] ?? $row['stock'] ?? '',
+            ];
+        }, $rows)));
+    }
+
+    private function looseSlug($value) {
+        $slug = strtolower(trim((string) $value));
+        $slug = preg_replace('/[^a-z0-9]+/', '-', $slug);
+        $slug = trim($slug, '-');
+        return preg_replace('/s\b/', '', $slug);
     }
 
     private function tableExists($table) {
@@ -521,6 +629,22 @@ class CategoryHelper {
         foreach ($this->fallbackCategories as $category) {
             foreach ($category['subcategories'] as $subcategory) {
                 if ($subcategory['slug'] === $slug) {
+                    return array_merge($subcategory, [
+                        'category_id' => $category['id'],
+                        'category_name' => $category['name'],
+                        'category_slug' => $category['slug'],
+                    ]);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function findSubcategoryById($subcategoryId) {
+        foreach ($this->fallbackCategories as $category) {
+            foreach ($category['subcategories'] as $subcategory) {
+                if ((int) $subcategory['id'] === (int) $subcategoryId) {
                     return array_merge($subcategory, [
                         'category_id' => $category['id'],
                         'category_name' => $category['name'],

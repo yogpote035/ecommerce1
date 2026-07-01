@@ -3,7 +3,7 @@ require_once 'init.php';
 $siteTitle = 'Contact Us';
 include 'templates/header.php';
 ?>
-<section class="py-5">
+<section class="pt-1 pb-5">
   <div class="container">
     <div class="row align-items-center">
       <div class="col-lg-6">

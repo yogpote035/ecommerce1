@@ -6,6 +6,9 @@ $siteTitle = 'Shop Categories';
 $categoryHelper = new CategoryHelper($conn);
 $categories = $categoryHelper->getCategoriesHierarchy();
 $selectedSlug = trim($_GET['slug'] ?? '');
+$priceMin = isset($_GET['price_min']) ? max(0, (float) $_GET['price_min']) : 0;
+$priceMax = isset($_GET['price_max']) ? max(0, (float) $_GET['price_max']) : 0;
+$sort = trim($_GET['sort'] ?? '');
 $selectedCategory = null;
 $products = [];
 $notFound = false;
@@ -21,11 +24,48 @@ if ($selectedSlug !== '') {
     $products = $categoryHelper->getAllProducts();
 }
 
+$products = array_values(array_filter($products, function ($product) use ($priceMin, $priceMax) {
+    $price = (float) ($product['price'] ?? $product['apprice'] ?? 0);
+    if ($priceMin > 0 && $price < $priceMin) {
+        return false;
+    }
+    if ($priceMax > 0 && $price > $priceMax) {
+        return false;
+    }
+    return true;
+}));
+
+if ($sort === 'price_low_high') {
+    usort($products, function ($a, $b) {
+        return (float) ($a['price'] ?? $a['apprice'] ?? 0) <=> (float) ($b['price'] ?? $b['apprice'] ?? 0);
+    });
+} elseif ($sort === 'price_high_low') {
+    usort($products, function ($a, $b) {
+        return (float) ($b['price'] ?? $b['apprice'] ?? 0) <=> (float) ($a['price'] ?? $a['apprice'] ?? 0);
+    });
+}
+
+$itemsPerPage = PaginationHelper::PER_PAGE;
+$currentPage = PaginationHelper::currentPage();
+$totalItems = count($products);
+$totalPages = PaginationHelper::totalPages($totalItems, $itemsPerPage);
+$currentPage = min($currentPage, $totalPages);
+$offset = PaginationHelper::offset($currentPage, $itemsPerPage);
+$products = array_slice($products, $offset, $itemsPerPage);
+
 include 'templates/header.php';
 ?>
-<div class="container py-5">
+<div class="container pt-1 pb-5">
   <div class="row">
     <div class="col-lg-3 mb-4">
+      <?php
+        $filterAction = 'category.php';
+        $filterHidden = $selectedSlug !== '' ? ['slug' => $selectedSlug] : [];
+        $filterClearUrl = $selectedSlug !== '' ? 'category.php?slug=' . urlencode($selectedSlug) : 'category.php';
+        include 'templates/components/filter-sidebar.php';
+        $activeCategorySlug = $selectedCategory['slug'] ?? '';
+        $activeSubcategorySlug = '';
+      ?>
       <?php include 'templates/components/category-menu.php'; ?>
     </div>
     <div class="col-lg-9">
@@ -63,6 +103,7 @@ include 'templates/header.php';
               </div>
             <?php endforeach; ?>
           </div>
+          <?php PaginationHelper::render($currentPage, $totalPages, $totalItems, $itemsPerPage, 'products'); ?>
         <?php else: ?>
           <div class="alert alert-info">No products are available for this category yet.</div>
         <?php endif; ?>

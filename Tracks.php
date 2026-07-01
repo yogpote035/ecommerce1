@@ -1,5 +1,5 @@
 <?php
-$orderId = (int)($_GET['order'] ?? $_GET['order_id'] ?? $_GET['oid'] ?? ($_SESSION['last_order_id'] ?? 0));
+$orderId = (int)($_GET['order'] ?? $_GET['order_id'] ?? $_GET['oid'] ?? 0);
 $customerId = (int)($_SESSION['customer_id'] ?? $_SESSION['cid'] ?? 0);
 $isAdminTracking = !empty($_SESSION['admin_logged_in']);
 $orders = [];

@@ -1,7 +1,7 @@
 <?php
 require_once 'init.php';
 $siteTitle = 'Order Tracking';
-$orderId = (int)($_GET['order'] ?? $_GET['order_id'] ?? $_GET['oid'] ?? ($_SESSION['last_order_id'] ?? 0));
+$orderId = (int)($_GET['order'] ?? $_GET['order_id'] ?? $_GET['oid'] ?? 0);
 include 'templates/header.php';
 ?>
 <div class="row">
