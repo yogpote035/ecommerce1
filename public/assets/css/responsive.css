@@ -1,0 +1,26 @@
+/* Responsive utility styles */
+@media (max-width: 991px) {
+  .navbar-theme .navbar-nav {
+    text-align: center;
+  }
+
+  .navbar-theme .nav-item {
+    width: 100%;
+  }
+
+  .product-gallery {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .page-header,
+  .hero {
+    padding: 2rem 0;
+  }
+}

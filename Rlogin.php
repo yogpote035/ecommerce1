@@ -1,196 +1,203 @@
 <?php
-// include_once 'db.php';
-$servername = "localhost";
-$username = "root";
-$password = "Yogeshpo7@";
-$dbname = "retailler";
-$conn = mysqli_connect($servername, $username, $password, $dbname);
+require_once 'init.php';
+$siteTitle = 'Retail Login';
 
-if ($_POST) {
-	$rname = $_POST["rname"];
-	$radd = $_POST["radd"];
-	$password = $_POST["rpass"];
+if (!empty($_SESSION['rname'])) {
+    header('Location: Rmain.php');
+    exit;
+}
 
-       $sql = "INSERT into rregister(rname, radd, rpass) VALUES('" .$rname.  "', '" . $radd . "', '" . $password. "')";
-       if (mysqli_query($conn, $sql)) {
-    echo '<script>alert("New record created successfully !")</script>';
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    $mode = ($_GET['mode'] ?? '') === 'signup' ? 'signup' : 'login';
+    header('Location: auth.php?role=retailer&mode=' . $mode);
+    exit;
+}
 
-  }
-  else{  echo "Error: " . $sql . "" . mysqli_error($conn);}
-  mysqli_close($conn);}
-  ?>  
-  
-<!doctype html>
-<html lang="en">
+$csrf_token = SecurityHelper::generateCSRFToken();
+$messages = [];
+$errors = [];
+$loginName = '';
+$registerName = '';
+$registerAddress = '';
 
-<head>
-  <!-- Required meta tags -->
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+$retailerConn = getDbConnection('retailler');
+if (!$retailerConn) {
+    die('Retailer database connection failed.');
+}
 
-  <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
-    integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+function safeInput($value) {
+    return trim($value ?? '');
+}
 
-  <title>Retail</title>
-  <style>
-    #container {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!SecurityHelper::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+        $errors[] = 'Invalid CSRF token.';
+    } else {
+        if (isset($_POST['action']) && $_POST['action'] === 'login') {
+            $loginName = safeInput($_POST['rname']);
+            $password = $_POST['rpass'] ?? '';
+
+            if ($loginName === '' || $password === '') {
+                $errors[] = 'Retailer name and password are required.';
+            }
+
+            if (empty($errors)) {
+                $stmt = mysqli_prepare($retailerConn, 'SELECT rpass FROM rregister WHERE rname = ? LIMIT 1');
+                mysqli_stmt_bind_param($stmt, 's', $loginName);
+                mysqli_stmt_execute($stmt);
+                mysqli_stmt_bind_result($stmt, $storedPassword);
+                if (mysqli_stmt_fetch($stmt)) {
+                    $passwordMatches = false;
+                    if (SecurityHelper::isPasswordHash($storedPassword)) {
+                        $passwordMatches = SecurityHelper::verifyPassword($password, $storedPassword);
+                    } else {
+                        $passwordMatches = $storedPassword === $password;
+                    }
+
+                    if ($passwordMatches) {
+                        if (!SecurityHelper::isPasswordHash($storedPassword)) {
+                            $newHash = SecurityHelper::hashPassword($password);
+                            $updateStmt = mysqli_prepare($retailerConn, 'UPDATE rregister SET rpass = ? WHERE rname = ?');
+                            mysqli_stmt_bind_param($updateStmt, 'ss', $newHash, $loginName);
+                            mysqli_stmt_execute($updateStmt);
+                            mysqli_stmt_close($updateStmt);
+                        }
+
+                        $_SESSION['rname'] = $loginName;
+                        $_SESSION['retailer_logged_in'] = true;
+                        $_SESSION['retailer_id'] = $loginName;
+                        $_SESSION['toast'] = ['type' => 'success', 'message' => 'Retailer logged in successfully.'];
+                        mysqli_stmt_close($stmt);
+                        mysqli_close($retailerConn);
+                        header('Location: Rmain.php');
+                        exit;
+                    }
+                }
+
+                mysqli_stmt_close($stmt);
+                $errors[] = 'Invalid retailer name or password.';
+            }
+        } else {
+            $registerName = safeInput($_POST['rname']);
+            $registerAddress = safeInput($_POST['radd']);
+            $password = $_POST['rpass'] ?? '';
+            $confirmPassword = $_POST['rconpass'] ?? '';
+
+            if ($registerName === '') {
+                $errors[] = 'Name is required.';
+            }
+            if ($registerAddress === '') {
+                $errors[] = 'Address is required.';
+            }
+            if ($password === '' || $confirmPassword === '') {
+                $errors[] = 'Password and confirm password are required.';
+            }
+            if ($password !== $confirmPassword) {
+                $errors[] = 'Password and confirm password do not match.';
+            }
+            if (strlen($password) < 6) {
+                $errors[] = 'Password must be at least 6 characters long.';
+            }
+
+            if (empty($errors)) {
+                $hash = SecurityHelper::hashPassword($password);
+                $stmt = mysqli_prepare($retailerConn, 'INSERT INTO rregister (rname, radd, rpass, rconpass) VALUES (?, ?, ?, ?)');
+                mysqli_stmt_bind_param($stmt, 'ssss', $registerName, $registerAddress, $hash, $hash);
+                if (mysqli_stmt_execute($stmt)) {
+                    $_SESSION['toast'] = ['type' => 'success', 'message' => 'Retailer registered successfully. Please login.'];
+                    mysqli_stmt_close($stmt);
+                    mysqli_close($retailerConn);
+                    header('Location: auth.php?role=retailer&mode=login');
+                    exit;
+                }
+                $errors[] = 'Registration failed. The retailer name may already exist.';
+                mysqli_stmt_close($stmt);
+            }
+        }
     }
-
-    #header {
-      width: 2050px;
-      height: 50px;
-      background-color: purple;
-      margin: 0px;
-    }
-
-    #header h1 {
-      color: white;
-      font: size 5;
-    }
-
-    #menu{
-background:hotpink;
-min-height:60px;
-width:100%;
-}
-#menu ul{
-margin:0;
-padding:0;
-list-style:none;
-}
-#menu ul li{
-float:left;
-position:relative;
-width:25%;
-}
-#menu ul li a{
-color:blue;
-display:block;
-padding:15px 95px;
-text-decoration:none;
-}
-#menu ul li a:hover{
-background:purple;
-color:white;
-}
-#menu ul li ul{
-position:absolute;
-    z-index: 99999;
-left:9999px;
-background:hotpink;
-}
-#menu ul li:hover ul{
-left:0;
-display:block;
-}
-#menu ul li ul li{
-float:none;
-width:250px;
-}
-#menu ul li ul li a{
-background:hotpink;
-color:blue;
-padding:15px 85px;
-}
-    #content {
-      background-image: linear-gradient(pink, cadetblue);
-      padding-left: 0px;
-      height: 850px;
-    }
-    #content pre {
-      color: darkblue;
-      padding-top: 10px;
-    }
-
-    #footer {
-      background-color: purple;
-width:100%;
-      height: 45px;
-margin:245px 0px 0px 0px;
-bottom:0;
-top:673px;
-position:absolute;
-
 }
 
-    #footer p {
-      padding-top: 10px;
-      color: white;
-    }
-  </style>
-</head>
+if (!empty($errors)) {
+    $_SESSION['toast'] = ['type' => 'danger', 'message' => implode(' ', $errors)];
+    mysqli_close($retailerConn);
+    $mode = (($_POST['action'] ?? '') === 'register') ? 'signup' : 'login';
+    header('Location: auth.php?role=retailer&mode=' . $mode);
+    exit;
+}
 
-<body>
-  <div id="container">
-    <div id="header">
-      <h1 align="center">Retail</h1>
-    </div>
-    <div id="menu">
-      <ul>
-      <li><a href="Home.html"><h5>Home</h5></a></li>
-      <li><a href="Rlogin.php"><h5>Reatiller</h5></a></li>
-      <li><a href="Clogin.php"><h5>Customer</h5></a></li>
-      <li><a href="Contact.html"><h5>Contact</h5></a></li>
-      </ul>
+include 'templates/header.php';
+?>
+<div class="row justify-content-center">
+  <div class="col-xl-10">
+    <?php if (!empty($errors)): ?>
+      <div class="alert alert-danger">
+        <ul class="mb-0">
+          <?php foreach ($errors as $error): ?>
+            <li><?php echo htmlspecialchars($error); ?></li>
+          <?php endforeach; ?>
+        </ul>
       </div>
-    <div id="content">
-      <br><br><br><br><br>
-   <div class="login-box">
-  <div class="row">
-      <div class="col mid-6">
-            <h1>Login</h1>
-   <form action="validation.php" method="POST">
-           <div class="form-group">
-            <h4> Rname</h4><input type="text" name="rname" class="form-control" required>
-           </div>
-             <div class="form-group">
-     <h4>Rpass</h4><input type="password" name="rpass" class="form-control" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Login</button>
-         </form>
-       </div>
-       <div class="col mid-6">
-        <h1>Register</h1>
-        <form action="Radd.html" method="POST">
-          <div class="form-group">
-            <h4>Rname</h4><input type="text" name="rname" class="form-control" required>
+    <?php endif; ?>
+    <?php if (!empty($messages)): ?>
+      <div class="alert alert-info">
+        <ul class="mb-0">
+          <?php foreach ($messages as $message): ?>
+            <li><?php echo htmlspecialchars($message); ?></li>
+          <?php endforeach; ?>
+        </ul>
+      </div>
+    <?php endif; ?>
+    <div class="row">
+      <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h2 class="h4 mb-3">Retailer Login</h2>
+            <form action="Rlogin.php" method="post">
+              <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
+              <input type="hidden" name="action" value="login">
+              <div class="mb-3">
+                <label for="rname" class="form-label">Retailer Name</label>
+                <input id="rname" type="text" name="rname" class="form-control" value="<?php echo htmlspecialchars($loginName); ?>" required>
+              </div>
+              <div class="mb-3">
+                <label for="rpass" class="form-label">Password</label>
+                <input id="rpass" type="password" name="rpass" class="form-control" required>
+              </div>
+              <button type="submit" class="btn btn-primary">Login</button>
+            </form>
           </div>
-          <div class="form-group">
-             <h4>Radd</h4><input type="text" name="radd" class="form-control" required>
-           </div>
-           <div class="form-group">
-             <h4>Rpass</h4><input type="password" name="rpass" class="form-control" required>
-           </div>
-           <a href="Radd.html"><button type="submit" class="btn btn-primary" >Register</button></a>
-        </form>
+        </div>
       </div>
-     </div>
+      <div class="col-md-6 mb-4">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h2 class="h4 mb-3">New Retailer</h2>
+            <p class="text-muted">Create your retailer account to manage products.</p>
+            <form action="Rlogin.php" method="post">
+              <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
+              <input type="hidden" name="action" value="register">
+              <div class="mb-3">
+                <label for="register_rname" class="form-label">Name</label>
+                <input id="register_rname" type="text" name="rname" class="form-control" value="<?php echo htmlspecialchars($registerName); ?>" required>
+              </div>
+              <div class="mb-3">
+                <label for="register_radd" class="form-label">Address</label>
+                <input id="register_radd" type="text" name="radd" class="form-control" value="<?php echo htmlspecialchars($registerAddress); ?>" required>
+              </div>
+              <div class="mb-3">
+                <label for="register_rpass" class="form-label">Password</label>
+                <input id="register_rpass" type="password" name="rpass" class="form-control" required>
+              </div>
+              <div class="mb-3">
+                <label for="register_rconpass" class="form-label">Confirm Password</label>
+                <input id="register_rconpass" type="password" name="rconpass" class="form-control" required>
+              </div>
+              <button type="submit" class="btn btn-success">Register</button>
+            </form>
+          </div>
+        </div>
       </div>
-     
-
-      
-    <div id="footer">
-      <p align="center">&#169;Copyrights Reserved</a></p>
     </div>
-    <!-- Optional JavaScript; choose one of the two! -->
-
-    <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
-      integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-      crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
-      crossorigin="anonymous"></script>
-
-    <!-- Option 2: jQuery, Popper.js, and Bootstrap JS
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js" integrity="sha384-w1Q4orYjBQndcko6MimVbzY0tgp4pWB4lZ7lr30WKz0vr/aWKhXdBNmNb5D92v7s" crossorigin="anonymous"></script>
-    -->
   </div>
-</body>
-</html>
+</div>
+<?php include 'templates/footer.php';

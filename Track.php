@@ -1,50 +1,37 @@
 <?php
-session_start();
-$orderId = isset($_GET['order']) ? (int)$_GET['order'] : 0;
+require_once 'init.php';
+$siteTitle = 'Order Tracking';
+$orderId = (int)($_GET['order'] ?? $_GET['order_id'] ?? $_GET['oid'] ?? ($_SESSION['last_order_id'] ?? 0));
+include 'templates/header.php';
 ?>
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
-  <title>Ecommerce - Order Tracking</title>
-  <style>
-    body { background:#f7f7f7; font-family:Arial, sans-serif; }
-    #header { width:100%; height:70px; background:#6a1b9a; display:flex; justify-content:center; align-items:center; }
-    #header h1 { color:white; margin:0; font-size:36px; font-weight:bold; }
-    #menu { background:hotpink; min-height:60px; width:100%; }
-    #menu ul { margin:0; padding:0; list-style:none; }
-    #menu ul li { float:left; position:relative; width:25%; }
-    #menu ul li a { color:blue; display:block; padding:15px 95px; text-decoration:none; }
-    #menu ul li a:hover { background:purple; color:white; }
-    #content { background:linear-gradient(pink, cadetblue); padding:20px 25px 80px; min-height:800px; }
-    #footer { background-color: purple; color:white; text-align:center; padding:15px 10px; }
-  </style>
-</head>
-<body>
-  <div id="header"><h1>Ecommerce</h1></div>
-  <div id="menu">
-    <ul>
-      <li><a href="Home.html"><h5>Home</h5></a></li>
-      <li><a href="index.php"><h5>Product</h5></a></li>
-      <li><a href="Track.php"><h5>Track Product</h5></a></li>
-      <li><a href="Contact.html"><h5>Contact</h5></a></li>
-    </ul>
-  </div>
-  <div id="content">
-    <div class="container">
-      <h2 class="text-center mb-4">Order Tracking</h2>
-      <?php if (isset($_SESSION['message'])) { echo '<div class="alert alert-success">' . $_SESSION['message'] . '</div>'; unset($_SESSION['message']); } ?>
-      <form method="get" action="Track.php" class="mb-4">
-        <div class="input-group">
-          <input type="number" name="order" class="form-control" placeholder="Enter tracking ID" value="<?php echo (int)$orderId; ?>">
-          <div class="input-group-append"><button class="btn btn-primary" type="submit">Track</button></div>
+<div class="row">
+  <div class="col-12">
+    <section class="card sidebar-card shadow-sm mb-4">
+      <div class="card-body">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
+          <div>
+            <h1 class="h4 mb-2">Order Tracking</h1>
+            <p class="text-secondary mb-0">Enter your tracking ID to see the latest order status.</p>
+          </div>
+          <a href="index.php" class="btn btn-secondary mt-3 mt-md-0">Back to Shop</a>
         </div>
-      </form>
-      <?php include 'Tracks.php'; ?>
-    </div>
+
+        <?php if (!empty($_SESSION['message'])): ?>
+          <div class="alert alert-success"><?php echo htmlspecialchars($_SESSION['message']); ?></div>
+          <?php unset($_SESSION['message']); ?>
+        <?php endif; ?>
+
+        <form method="get" action="Track.php" class="mb-4">
+          <div class="input-group">
+            <input type="number" name="order" class="form-control" placeholder="Enter tracking ID" value="<?php echo $orderId; ?>" aria-label="Tracking ID">
+            <button class="btn btn-primary" type="submit">Track</button>
+          </div>
+        </form>
+
+        <?php include 'Tracks.php'; ?>
+      </div>
+    </section>
   </div>
-  <div id="footer">© Copyrights Reserved</div>
-</body>
-</html>
+</div>
+
+<?php include 'templates/footer.php';

@@ -1,143 +1,312 @@
-
 <?php
-session_start();
-if (empty($_SESSION['cart'])) {
-    $_SESSION['cart'] = [];
-}
-if (empty($_SESSION['cart_qty'])) {
-    $_SESSION['cart_qty'] = [];
+require_once 'init.php';
+require_once 'helpers/CategoryHelper.php';
+
+$categorySlug = isset($_GET['category']) ? trim($_GET['category']) : '';
+$subcategorySlug = isset($_GET['subcategory']) ? trim($_GET['subcategory']) : '';
+$priceMin = isset($_GET['price_min']) ? (float) $_GET['price_min'] : 0;
+$priceMax = isset($_GET['price_max']) ? (float) $_GET['price_max'] : 0;
+$sort = trim($_GET['sort'] ?? '');
+
+// Pagination setup
+$itemsPerPage = PaginationHelper::PER_PAGE;
+$currentPage = PaginationHelper::currentPage();
+$offset = PaginationHelper::offset($currentPage, $itemsPerPage);
+
+$categoryHelper = new CategoryHelper($conn);
+$categories = $categoryHelper->getCategoriesHierarchy();
+$activeCategory = null;
+$activeSubcategory = null;
+
+foreach ($categories as $cat) {
+    if ($cat['slug'] === $categorySlug) {
+        $activeCategory = $cat;
+        break;
+    }
 }
 
-require_once 'db.php';
-
-$category = isset($_GET['category']) ? trim($_GET['category']) : '';
-$search = isset($_GET['search']) ? trim($_GET['search']) : '';
-
-$sql = "SELECT * FROM apadd WHERE 1=1";
-if ($category !== '') {
-    $categorySafe = mysqli_real_escape_string($conn, $category);
-    $sql .= " AND apcategory = '$categorySafe'";
+if ($subcategorySlug !== '') {
+    foreach ($categories as $cat) {
+        foreach ($cat['subcategories'] as $sub) {
+            if ($sub['slug'] === $subcategorySlug) {
+                $activeCategory = $cat;
+                $activeSubcategory = $sub;
+                break 2;
+            }
+        }
+    }
 }
-if ($search !== '') {
-    $searchSafe = mysqli_real_escape_string($conn, $search);
-    $sql .= " AND (LOWER(apname) LIKE '%$searchSafe%' OR LOWER(apbrand) LIKE '%$searchSafe%' OR LOWER(apcategory) LIKE '%$searchSafe%')";
-}
-$sql .= " ORDER BY Apid DESC";
 
-$result = mysqli_query($conn, $sql);
 $products = [];
-if ($result) {
+$notFound = false;
+$countSql = 'SELECT COUNT(*) as total FROM apadd';
+$sql = 'SELECT * FROM apadd';
+$conditions = [];
+$params = [];
+$types = '';
+
+if ($activeSubcategory) {
+    $conditions[] = 'LOWER(apcategory) = ?';
+    $types .= 's';
+    $params[] = strtolower($activeCategory['name'] . ' > ' . $activeSubcategory['name']);
+} elseif ($activeCategory) {
+    $conditions[] = '(LOWER(apcategory) = ? OR LOWER(apcategory) LIKE ?)';
+    $types .= 'ss';
+    $params[] = strtolower($activeCategory['name']);
+    $params[] = strtolower($activeCategory['name'] . ' > %');
+}
+
+if ($priceMin > 0) {
+    $conditions[] = 'apprice >= ?';
+    $types .= 'd';
+    $params[] = $priceMin;
+}
+
+if ($priceMax > 0) {
+    $conditions[] = 'apprice <= ?';
+    $types .= 'd';
+    $params[] = $priceMax;
+}
+
+if (!empty($conditions)) {
+    $whereClause = ' WHERE ' . implode(' AND ', $conditions);
+    $countSql .= $whereClause;
+    $sql .= $whereClause;
+}
+
+if ($sort === 'price_low_high') {
+    $sql .= ' ORDER BY apprice ASC';
+} elseif ($sort === 'price_high_low') {
+    $sql .= ' ORDER BY apprice DESC';
+} else {
+    $sql .= ' ORDER BY Apid DESC';
+}
+
+// Get total count
+$countStmt = mysqli_prepare($conn, $countSql);
+$totalItems = 0;
+$totalPages = 1;
+if ($countStmt) {
+    if (!empty($types)) {
+        mysqli_stmt_bind_param($countStmt, $types, ...$params);
+    }
+    mysqli_stmt_execute($countStmt);
+    $countResult = mysqli_stmt_get_result($countStmt);
+    $countData = mysqli_fetch_assoc($countResult);
+    $totalItems = $countData['total'];
+    $totalPages = PaginationHelper::totalPages($totalItems, $itemsPerPage);
+    $currentPage = min($currentPage, $totalPages);
+    $offset = PaginationHelper::offset($currentPage, $itemsPerPage);
+    mysqli_stmt_close($countStmt);
+}
+
+// Add pagination to main query
+$sql .= ' LIMIT ? OFFSET ?';
+$params[] = $itemsPerPage;
+$params[] = $offset;
+$types .= 'ii';
+
+$stmt = mysqli_prepare($conn, $sql);
+if ($stmt) {
+    if (!empty($types)) {
+        mysqli_stmt_bind_param($stmt, $types, ...$params);
+    }
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
     while ($row = mysqli_fetch_assoc($result)) {
         $products[] = $row;
     }
+    mysqli_stmt_close($stmt);
+} else {
+    $notFound = $categorySlug !== '' && !$activeCategory;
 }
-mysqli_close($conn);
 
-$categories = ['Bags','Accessories','Clothes','Footwear','Appliances'];
+$siteTitle = 'Ecommerce';
+include 'templates/header.php';
 ?>
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
-  <title>Ecommerce</title>
-  <style>
-    body { background: #f7f7f7; font-family: Arial, sans-serif; }
-    #header { width:100%; height:70px; background:#6a1b9a; display:flex; justify-content:center; align-items:center; }
-    #header h1 { color:white; margin:0; font-size:36px; font-weight:bold; }
-    #menu { background: hotpink; min-height:60px; width:100%; }
-    #menu ul { margin:0; padding:0; list-style:none; }
-    #menu ul li { float:left; position:relative; width:25%; }
-    #menu ul li a { color:blue; display:block; padding:15px 95px; text-decoration:none; }
-    #menu ul li a:hover { background:purple; color:white; }
-    #content { background: linear-gradient(pink, cadetblue); padding: 20px 25px 80px; min-height: 800px; }
-    .sidebar { background: #fff; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
-    .product-card { background:#fff; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.12); }
-    .product-card img { width: 100%; height: 140px; object-fit: cover; border-radius: 6px; }
-    .product-meta { font-size: 14px; color: #555; }
-    #footer { background-color: purple; color:white; text-align:center; padding: 15px 10px; }
-  </style>
-</head>
-<body>
-  <div id="header">
-    <h1>Ecommerce</h1>
-  </div>
-  <div id="menu">
-    <ul>
-      <li><a href="Home.html"><h5>Home</h5></a></li>
-      <li><a href="index.php"><h5>Product</h5></a></li>
-      <li><a href="Track.php"><h5>Track</h5></a></li>
-      <li><a href="Contact.html"><h5>Contact</h5></a></li>
-    </ul>
-  </div>
-  <div id="content">
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-md-3">
-          <div class="sidebar">
-            <h4>Categories</h4>
-            <ul class="nav flex-column">
-              <li class="nav-item"><a class="nav-link" href="index.php">All Products</a></li>
-              <?php foreach ($categories as $cat) { ?>
-                <li class="nav-item"><a class="nav-link" href="index.php?category=<?php echo urlencode($cat); ?>"><?php echo htmlspecialchars($cat); ?></a></li>
-              <?php } ?>
-            </ul>
+<div class="row">
+  <div class="col-md-3 mb-4">
+    <div class="sidebar-card sidebar-sticky shadow-sm h-fit mb-4">
+      <div class="card-body">
+        <h4 class="h5">Filters</h4>
+        <form method="get" action="index.php">
+          <input type="hidden" name="category" value="<?php echo htmlspecialchars($categorySlug); ?>">
+          <input type="hidden" name="subcategory" value="<?php echo htmlspecialchars($subcategorySlug); ?>">
+          <div class="form-group mb-3">
+            <label for="price_min" class="small font-weight-bold">Min Price</label>
+            <input id="price_min" name="price_min" type="number" step="0.01" min="0" class="form-control" value="<?php echo $priceMin > 0 ? htmlspecialchars($priceMin) : ''; ?>" placeholder="₹0">
           </div>
-          <div class="sidebar">
-            <h4>Quick Search</h4>
-            <form method="get" action="index.php" class="form-inline">
-              <input type="text" name="search" class="form-control mb-2" placeholder="Search products" value="<?php echo htmlspecialchars($search); ?>">
-              <button type="submit" class="btn btn-primary mb-2">Search</button>
-            </form>
+          <div class="form-group mb-3">
+            <label for="price_max" class="small font-weight-bold">Max Price</label>
+            <input id="price_max" name="price_max" type="number" step="0.01" min="0" class="form-control" value="<?php echo $priceMax > 0 ? htmlspecialchars($priceMax) : ''; ?>" placeholder="₹0">
           </div>
-        </div>
-        <div class="col-md-9">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h3>Products</h3>
-            <a href="view_cart.php" class="btn btn-success">Cart <span class="badge badge-light"><?php echo count($_SESSION['cart']); ?></span></a>
+          <div class="form-group mb-3">
+            <label for="sort" class="small font-weight-bold">Sort</label>
+            <select id="sort" name="sort" class="form-control">
+              <option value="">Default</option>
+              <option value="price_low_high"<?php echo $sort === 'price_low_high' ? ' selected' : ''; ?>>Price: Low to High</option>
+              <option value="price_high_low"<?php echo $sort === 'price_high_low' ? ' selected' : ''; ?>>Price: High to Low</option>
+            </select>
           </div>
-          <?php if (isset($_SESSION['message'])) { echo '<div class="alert alert-info">' . $_SESSION['message'] . '</div>'; unset($_SESSION['message']); } ?>
-          <?php if (!empty($products)) { ?>
-            <div class="row">
-              <?php foreach ($products as $row) { ?>
-                <div class="col-md-6 col-lg-4">
-                  <div class="product-card">
-                    <img src="<?php echo !empty($row['apimage']) ? htmlspecialchars($row['apimage']) : 'images/products/accessories.jpg'; ?>" alt="Product image">
-                    <h5 class="mt-2"><?php echo htmlspecialchars($row['apname']); ?></h5>
-                    <p class="product-meta">Brand: <?php echo htmlspecialchars($row['apbrand']); ?></p>
-                    <p class="product-meta">Category: <?php echo htmlspecialchars($row['apcategory']); ?></p>
-                    <p class="product-meta">Qty: <?php echo htmlspecialchars($row['apqty']); ?></p>
-                    <h4 class="text-primary">₹<?php echo number_format($row['apprice'], 2); ?></h4>
-                    <a href="add_cart.php?id=<?php echo (int)$row['Apid']; ?>" class="btn btn-primary btn-block">Add to Cart</a>
-                  </div>
+          <button type="submit" class="btn btn-primary btn-block mb-4">Apply filters</button>
+        </form>
+
+        <h4 class="h5">Categories</h4>
+        <div class="list-group list-group-flush mt-3">
+          <a href="index.php" class="list-group-item list-group-item-action<?php echo $categorySlug === '' ? ' active' : ''; ?>">All Products</a>
+          <?php foreach ($categories as $cat): ?>
+            <div class="mb-2">
+              <a href="index.php?category=<?php echo urlencode($cat['slug']); ?>" class="list-group-item list-group-item-action<?php echo $categorySlug === $cat['slug'] ? ' active' : ''; ?>">
+                <?php echo htmlspecialchars($cat['name']); ?>
+              </a>
+              <?php if (!empty($cat['subcategories'])): ?>
+                <div class="list-group list-group-flush ml-3">
+                  <?php foreach ($cat['subcategories'] as $sub): ?>
+                    <a href="index.php?category=<?php echo urlencode($cat['slug']); ?>&subcategory=<?php echo urlencode($sub['slug']); ?>" class="list-group-item list-group-item-action small<?php echo $subcategorySlug === $sub['slug'] ? ' active' : ''; ?>">
+                      <?php echo htmlspecialchars($sub['name']); ?>
+                    </a>
+                  <?php endforeach; ?>
                 </div>
-              <?php } ?>
+              <?php endif; ?>
             </div>
-          <?php } else { ?>
-            <div class="alert alert-warning">No products found for this selection.</div>
-          <?php } ?>
+          <?php endforeach; ?>
         </div>
       </div>
     </div>
   </div>
-  <div id="footer">© Copyrights Reserved</div>
-</body>
-</html>
-    <!-- Optional JavaScript; choose one of the two! -->
 
-    <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
-      integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-      crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
-      crossorigin="anonymous"></script>
+  <div class="col-md-9 product-area-scroll">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-column flex-md-row">
+      <div>
+        <h2 class="h4 mb-1"><?php echo $activeSubcategory ? htmlspecialchars($activeCategory['name'] . ' / ' . $activeSubcategory['name']) : ($activeCategory ? htmlspecialchars($activeCategory['name']) : 'Products'); ?></h2>
+        <p class="text-muted mb-0"><?php echo $activeSubcategory ? 'Showing products for the selected subcategory.' : ($activeCategory ? 'Showing products for the selected category.' : 'Responsive product cards for customers.'); ?></p>
+        <?php if ($activeCategory && !$activeSubcategory && !empty($activeCategory['subcategories'])): ?>
+          <div class="mt-3">
+            <span class="small text-secondary">Subcategories:</span>
+            <div class="d-flex flex-wrap mt-2 ml-3">
+              <?php foreach ($activeCategory['subcategories'] as $sub): ?>
+                <a href="index.php?category=<?php echo urlencode($activeCategory['slug']); ?>&subcategory=<?php echo urlencode($sub['slug']); ?>" class="btn ml-1 btn-outline-secondary btn-sm<?php echo $subcategorySlug === $sub['slug'] ? ' active' : ''; ?>"><?php echo htmlspecialchars($sub['name']); ?></a>
+              <?php endforeach; ?>
+            </div>
+          </div>
+        <?php endif; ?>
+      </div>
+      <a href="view_cart.php" class="btn btn-success mt-3 mt-md-0">Cart <span class="badge bg-light text-dark"><?php echo count($_SESSION['cart']); ?></span></a>
+    </div>
 
-    <!-- Option 2: jQuery, Popper.js, and Bootstrap JS
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js" integrity="sha384-w1Q4orYjBQndcko6MimVbzY0tgp4pWB4lZ7lr30WKz0vr/aWKhXdBNmNb5D92v7s" crossorigin="anonymous"></script>
-    -->
-  </div>
-</body>
+    <?php if (isset($_SESSION['message'])): ?>
+      <div class="alert alert-info"><?php echo htmlspecialchars($_SESSION['message']); unset($_SESSION['message']); ?></div>
+    <?php endif; ?>
+
+      <?php if (!empty($products)): ?>
+        <div class="row">
+          <?php foreach ($products as $row): ?>
+            <div class="col-sm-6 col-lg-4 mb-4">
+              <?php
+                $product = [
+                  'id' => (int) ($row['Apid'] ?? 0),
+                  'name' => $row['apname'] ?? 'Product',
+                  'price' => $row['apprice'] ?? 0,
+                  'image' => !empty($row['apimage']) ? $row['apimage'] : 'images/products/accessories.jpg',
+                  'rating' => $row['aprating'] ?? 4.0,
+                  'brand' => $row['apbrand'] ?? '',
+                  'category' => $row['apcategory'] ?? '',
+                  'stock' => $row['apqty'] ?? '',
+                ];
+              ?>
+              <?php include 'templates/components/product-card.php'; ?>
+            </div>
+          <?php endforeach; ?>
+        </div>
+
+        <?php PaginationHelper::render($currentPage, $totalPages, $totalItems, $itemsPerPage, 'products'); ?>
+        <!-- Legacy pagination retained unreachable while shared pagination renders above. -->
+        <?php if (false && $totalPages > 1): 
+          $showFrom = $offset + 1;
+          $showTo = min($offset + $itemsPerPage, $totalItems);
+          
+          // Build pagination URL helper
+          $buildPaginationUrl = function($pageNum) use ($categorySlug, $subcategorySlug, $priceMin, $priceMax, $sort) {
+            $pageNum = (int)$pageNum;
+            if ($pageNum < 1) {
+              $pageNum = 1;
+            }
+            $url = '?page=' . $pageNum;
+            if ($categorySlug) $url .= '&category=' . urlencode($categorySlug);
+            if ($subcategorySlug) $url .= '&subcategory=' . urlencode($subcategorySlug);
+            if ($priceMin > 0) $url .= '&price_min=' . $priceMin;
+            if ($priceMax > 0) $url .= '&price_max=' . $priceMax;
+            if ($sort) $url .= '&sort=' . urlencode($sort);
+            return $url;
+          };
+        ?>
+          <div class="pagination-section">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+              <!-- Pagination Info -->
+              <div class="pagination-info">
+                <span class="pagination-text">
+                  SHOWING <?php echo $showFrom; ?> TO <?php echo $showTo; ?> OF <?php echo $totalItems; ?> PRODUCTS
+                </span>
+              </div>
+
+              <!-- Pagination Controls -->
+              <div class="pagination-controls d-flex align-items-center gap-2">
+                <!-- Previous Button -->
+                <?php if ((int)$currentPage > 1): ?>
+                  <a href="<?php echo $buildPaginationUrl((int)$currentPage - 1); ?>" class="pagination-nav-btn" title="Previous Page">
+                    <span aria-hidden="true">‹</span>
+                  </a>
+                <?php else: ?>
+                  <span class="pagination-nav-btn disabled" aria-hidden="true">
+                    <span>‹</span>
+                  </span>
+                <?php endif; ?>
+
+                <!-- Page Numbers -->
+                <div class="pagination-numbers">
+                  <?php 
+                    $start = max(1, (int)$currentPage - 2);
+                    $end = min($totalPages, (int)$currentPage + 2);
+                    
+                    if ($start > 1): ?>
+                      <a href="<?php echo $buildPaginationUrl(1); ?>" class="pagination-page-btn">1</a>
+                      <span class="pagination-dots">...</span>
+                    <?php endif;
+                    
+                    for ($i = $start; $i <= $end; $i++): 
+                      $pageClass = 'pagination-page-btn';
+                      if ($i === (int) $currentPage) {
+                        $pageClass .= ' active';
+                      }                    ?>
+                      <a href="<?php echo $buildPaginationUrl($i); ?>" class="<?php echo $pageClass; ?>"<?php echo $i === (int) $currentPage ? ' aria-current="page"' : ''; ?>>
+                        <?php echo $i; ?>
+                      </a>
+                    <?php endfor;
+                    
+                    if ($end < $totalPages): ?>
+                      <span class="pagination-dots">...</span>
+                      <a href="<?php echo $buildPaginationUrl($totalPages); ?>" class="pagination-page-btn"><?php echo $totalPages; ?></a>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Next Button -->
+                <?php if ((int)$currentPage < $totalPages): ?>
+                  <a href="<?php echo $buildPaginationUrl((int)$currentPage + 1); ?>" class="pagination-nav-btn" title="Next Page">
+                    <span aria-hidden="true">›</span>
+                  </a>
+                <?php else: ?>
+                  <span class="pagination-nav-btn disabled" aria-hidden="true">
+                    <span>›</span>
+                  </span>
+                <?php endif; ?>
+              </div>
+            </div>
+          </div>
+        <?php endif; ?>
+      <?php else: ?>
+        <div class="alert alert-warning">No products found for this selection.</div>
+      <?php endif; ?>
+    </div>
+</div>
+
+<?php include 'templates/footer.php'; ?>

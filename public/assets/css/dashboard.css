@@ -1,0 +1,123 @@
+:root {
+    --dashboard-bg: #f8fafc;
+    --dashboard-card: #ffffff;
+    --dashboard-border: #e5e7eb;
+    --dashboard-text: #111827;
+    --dashboard-muted: #6b7280;
+    --dashboard-primary: #2563eb;
+    --dashboard-success: #16a34a;
+    --dashboard-warning: #f59e0b;
+    --dashboard-danger: #dc2626;
+}
+
+body {
+    background: var(--dashboard-bg);
+    color: var(--dashboard-text);
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.admin-container {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    min-height: 100vh;
+    gap: 1rem;
+    padding: 1.5rem;
+}
+
+.sidebar {
+    background: #ffffff;
+    border: 1px solid var(--dashboard-border);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+}
+
+.sidebar-header h2 {
+    margin: 0 0 1rem;
+    font-size: 1.25rem;
+}
+
+.sidebar-nav {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.sidebar-nav .nav-item {
+    display: block;
+    padding: 0.9rem 1rem;
+    color: var(--dashboard-text);
+    border-radius: 0.75rem;
+    text-decoration: none;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.sidebar-nav .nav-item.active,
+.sidebar-nav .nav-item:hover {
+    background: rgba(37, 99, 235, 0.12);
+    color: var(--dashboard-primary);
+}
+
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.topbar h1 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: var(--dashboard-card);
+    border: 1px solid var(--dashboard-border);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 15px 40px rgba(15, 23, 42, 0.04);
+}
+
+.stat-card h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    color: var(--dashboard-muted);
+}
+
+.stat-card .stat-value {
+    margin: 0;
+    font-size: 2.25rem;
+    font-weight: 700;
+}
+
+@media (max-width: 992px) {
+    .admin-container {
+        grid-template-columns: 1fr;
+    }
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}

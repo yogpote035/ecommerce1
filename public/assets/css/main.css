@@ -1,0 +1,39 @@
+/* Global layout and utility styles */
+:root {
+  --max-page-width: 1240px;
+  --page-padding: 1.5rem;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  background: var(--bg);
+  color: var(--text-primary);
+}
+
+.container {
+  max-width: var(--max-page-width);
+  margin: 0 auto;
+  padding: 0 var(--page-padding);
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+.text-muted {
+  color: var(--text-secondary);
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
