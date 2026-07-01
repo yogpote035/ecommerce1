@@ -81,7 +81,7 @@ if (!$descriptionColumnExists) {
 }
 
 $mainImagePath = '';
-$stmt = mysqli_prepare($conn, 'INSERT INTO apadd (apname, apbrand, apcategory, apqty, apprice, apdescription, Apimage) VALUES (?, ?, ?, ?, ?, ?, ?)');
+$stmt = mysqli_prepare($conn, 'INSERT INTO apadd (apname, apbrand, apcategory, apqty, apprice, apdescription, apimage) VALUES (?, ?, ?, ?, ?, ?, ?)');
 if (!$stmt) {
     $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Unable to prepare product save.'];
     header('Location: ' . $redirectUrl);
@@ -130,7 +130,7 @@ if (!empty($_FILES['apimage']['name']) && is_array($_FILES['apimage']['name'])) 
 
 if (!empty($uploadedPaths)) {
     $mainImagePath = $uploadedPaths[0];
-    $updateStmt = mysqli_prepare($conn, 'UPDATE apadd SET Apimage = ? WHERE Apid = ?');
+    $updateStmt = mysqli_prepare($conn, 'UPDATE apadd SET apimage = ? WHERE Apid = ?');
     if ($updateStmt) {
         mysqli_stmt_bind_param($updateStmt, 'si', $mainImagePath, $productId);
         mysqli_stmt_execute($updateStmt);

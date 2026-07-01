@@ -179,6 +179,16 @@ a:hover,
   color: var(--primary-dark) !important;
 }
 
+[data-theme="dark"] .table-hover tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.18) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .table-hover tbody tr:hover td,
+[data-theme="dark"] .table-hover tbody tr:hover th {
+  border-color: var(--border) !important;
+}
+
 button,
 input,
 select,

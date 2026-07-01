@@ -33,7 +33,7 @@ if ($isAdmin) {
     $moreNavItems = [
         ['href' => 'wishlist.php', 'label' => 'Wishlist'],
         ['href' => 'checkout.php', 'label' => 'Checkout'],
-        ['href' => 'Track.php', 'label' => 'Track'],
+        ['href' => 'Track.php', 'label' => 'Track Orders'],
         ['href' => 'Contact.php', 'label' => 'Contact'],
     ];
 } elseif ($isRetailer) {

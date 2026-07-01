@@ -148,7 +148,7 @@ if ($lowStockResult) {
         .dashboard-shell { max-width: 1320px; margin: 0 auto; padding: .75rem 1rem 1.5rem; }
         .metric-card { border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; padding: 1.25rem; height: 100%; }
         .metric-label { color: #64748b; font-weight: 700; text-transform: uppercase; font-size: .75rem; letter-spacing: .04em; }
-        .metric-value { font-size: 2rem; font-weight: 800; color: #0f172a; line-height: 1.1; margin-top: .4rem; }
+        .metric-value { font-size: 2rem; font-weight: 800; color: #515c75; line-height: 1.1; margin-top: .4rem; }
         .report-card { border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; box-shadow: 0 8px 28px rgba(15, 23, 42, .05); }
         .bar-row { display: grid; grid-template-columns: minmax(110px, 160px) 1fr 80px; gap: .75rem; align-items: center; margin-bottom: .75rem; }
         .bar-track { height: 12px; border-radius: 999px; background: #e2e8f0; overflow: hidden; }

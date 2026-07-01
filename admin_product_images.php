@@ -74,24 +74,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } elseif ($action === 'primary') {
         $imageId = (int) ($_POST['image_id'] ?? 0);
-        mysqli_query($conn, 'UPDATE product_images SET is_primary = 0 WHERE product_id = ' . $productId);
-        $stmt = mysqli_prepare($conn, 'UPDATE product_images SET is_primary = 1 WHERE id = ? AND product_id = ?');
-        mysqli_stmt_bind_param($stmt, 'ii', $imageId, $productId);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
         $pathStmt = mysqli_prepare($conn, 'SELECT image_path FROM product_images WHERE id = ? AND product_id = ? LIMIT 1');
-        mysqli_stmt_bind_param($pathStmt, 'ii', $imageId, $productId);
-        mysqli_stmt_execute($pathStmt);
-        mysqli_stmt_bind_result($pathStmt, $imagePath);
-        if (mysqli_stmt_fetch($pathStmt)) {
-            $publicPath = 'uploads/products/' . basename($imagePath);
-            $updateStmt = mysqli_prepare($conn, 'UPDATE apadd SET Apimage = ? WHERE Apid = ?');
-            mysqli_stmt_bind_param($updateStmt, 'si', $publicPath, $productId);
-            mysqli_stmt_execute($updateStmt);
-            mysqli_stmt_close($updateStmt);
+        if ($pathStmt) {
+            mysqli_stmt_bind_param($pathStmt, 'ii', $imageId, $productId);
+            mysqli_stmt_execute($pathStmt);
+            mysqli_stmt_bind_result($pathStmt, $imagePath);
+            $imageFound = mysqli_stmt_fetch($pathStmt);
+            mysqli_stmt_close($pathStmt);
+        } else {
+            $imageFound = false;
+            $imagePath = '';
         }
-        mysqli_stmt_close($pathStmt);
-        $_SESSION['toast'] = ['type' => 'success', 'message' => 'Primary image updated.'];
+
+        if ($imageFound) {
+            $publicPath = 'uploads/products/' . basename($imagePath);
+
+            mysqli_begin_transaction($conn);
+            $primaryUpdated = false;
+            $productUpdated = false;
+
+            $clearStmt = mysqli_prepare($conn, 'UPDATE product_images SET is_primary = 0 WHERE product_id = ?');
+            if ($clearStmt) {
+                mysqli_stmt_bind_param($clearStmt, 'i', $productId);
+                $primaryUpdated = mysqli_stmt_execute($clearStmt);
+                mysqli_stmt_close($clearStmt);
+            }
+
+            if ($primaryUpdated) {
+                $stmt = mysqli_prepare($conn, 'UPDATE product_images SET is_primary = 1 WHERE id = ? AND product_id = ?');
+                if ($stmt) {
+                    mysqli_stmt_bind_param($stmt, 'ii', $imageId, $productId);
+                    $primaryUpdated = mysqli_stmt_execute($stmt);
+                    mysqli_stmt_close($stmt);
+                } else {
+                    $primaryUpdated = false;
+                }
+            }
+
+            if ($primaryUpdated) {
+                $updateStmt = mysqli_prepare($conn, 'UPDATE apadd SET apimage = ? WHERE Apid = ?');
+                if ($updateStmt) {
+                    mysqli_stmt_bind_param($updateStmt, 'si', $publicPath, $productId);
+                    $productUpdated = mysqli_stmt_execute($updateStmt);
+                    mysqli_stmt_close($updateStmt);
+                }
+            }
+
+            if ($primaryUpdated && $productUpdated) {
+                mysqli_commit($conn);
+                $_SESSION['toast'] = ['type' => 'success', 'message' => 'Primary image updated.'];
+            } else {
+                mysqli_rollback($conn);
+                $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Unable to update product primary image.'];
+            }
+        } else {
+            $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Selected image was not found.'];
+        }
     } elseif ($action === 'delete') {
         $imageId = (int) ($_POST['image_id'] ?? 0);
         $stmt = mysqli_prepare($conn, 'DELETE FROM product_images WHERE id = ? AND product_id = ?');

@@ -134,9 +134,50 @@ $csrfToken = SecurityHelper::generateCSRFToken();
     }
     .toast-container {
       position: fixed;
-      top: 1rem;
+      top: 4rem;
       right: 1rem;
       z-index: 1080;
+    }
+    .app-toast {
+      min-width: min(320px, calc(100vw - 2rem));
+      border: 0;
+      border-radius: 0.75rem;
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+    }
+    .app-toast .toast-body {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem 1.1rem;
+      font-weight: 600;
+      color: inherit;
+    }
+    .app-toast .close {
+      color: inherit;
+      opacity: 0.8;
+      text-shadow: none;
+    }
+    .app-toast .close:hover,
+    .app-toast .close:focus {
+      opacity: 1;
+    }
+    .app-toast-success {
+      background: #16a34a !important;
+      color: #fff !important;
+    }
+    .app-toast-danger {
+      background: #dc2626 !important;
+      color: #fff !important;
+    }
+    .app-toast-warning {
+      background: #f59e0b !important;
+      color: #111827 !important;
+    }
+    .app-toast-info {
+      background: #2563eb !important;
+      color: #fff !important;
     }
     @media (min-width: 992px) {
       body {
@@ -218,17 +259,14 @@ $csrfToken = SecurityHelper::generateCSRFToken();
   <?php
     $toastType = $_SESSION['toast']['type'] ?? 'info';
     $toastMessage = htmlspecialchars($_SESSION['toast']['message'] ?? '');
-    $toastClass = $toastType === 'success' ? 'bg-success text-white' : ($toastType === 'danger' ? 'bg-danger text-white' : 'bg-info text-white');
+    $toastClass = in_array($toastType, ['success', 'danger', 'warning', 'info'], true) ? 'app-toast-' . $toastType : 'app-toast-info';
   ?>
-  <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" data-delay="5000" data-autohide="true">
-    <div class="toast-header <?php echo $toastClass; ?>">
-      <strong class="mr-auto"><?php echo ucfirst($toastType); ?></strong>
-      <button type="button" class="ml-2 mb-1 close text-white" data-dismiss="toast" aria-label="Close">
+  <div class="toast app-toast <?php echo htmlspecialchars($toastClass); ?> show" role="alert" aria-live="assertive" aria-atomic="true" data-delay="5000" data-autohide="true">
+    <div class="toast-body">
+      <span><?php echo $toastMessage; ?></span>
+      <button type="button" class="close" data-dismiss="toast" aria-label="Close">
         <span aria-hidden="true">&times;</span>
       </button>
-    </div>
-    <div class="toast-body">
-      <?php echo $toastMessage; ?>
     </div>
   </div>
 </div>

@@ -32,7 +32,7 @@ if (!$descriptionColumnExists) {
 }
 
 if ($productId > 0) {
-    $stmt = mysqli_prepare($conn, "SELECT Apid, apname, apbrand, apcategory, apqty, apprice, apdescription, Apimage FROM apadd WHERE Apid = ? LIMIT 1");
+    $stmt = mysqli_prepare($conn, "SELECT Apid, apname, apbrand, apcategory, apqty, apprice, apdescription, apimage FROM apadd WHERE Apid = ? LIMIT 1");
     mysqli_stmt_bind_param($stmt, 'i', $productId);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
@@ -110,7 +110,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ];
 
                 try {
-                    $uploadedPaths[] = $imageHelper->uploadImageFile($productId, $fileArray, empty($product['Apimage']) && $index === 0, $apname);
+                    $currentImage = $product['apimage'] ?? $product['Apimage'] ?? '';
+                    $uploadedPaths[] = $imageHelper->uploadImageFile($productId, $fileArray, empty($currentImage) && $index === 0, $apname);
                 } catch (Exception $ex) {
                     $_SESSION['toast'] = ['type' => 'warning', 'message' => 'Product updated, but one or more images could not be uploaded: ' . $ex->getMessage()];
                     header('Location: admin_product_edit.php?id=' . $productId);
@@ -119,9 +120,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        if (!empty($uploadedPaths) && empty($product['Apimage'])) {
+        $currentImage = $product['apimage'] ?? $product['Apimage'] ?? '';
+        if (!empty($uploadedPaths) && empty($currentImage)) {
             $mainImagePath = $uploadedPaths[0];
-            $imageStmt = mysqli_prepare($conn, 'UPDATE apadd SET Apimage = ? WHERE Apid = ?');
+            $imageStmt = mysqli_prepare($conn, 'UPDATE apadd SET apimage = ? WHERE Apid = ?');
             if ($imageStmt) {
                 mysqli_stmt_bind_param($imageStmt, 'si', $mainImagePath, $productId);
                 mysqli_stmt_execute($imageStmt);
