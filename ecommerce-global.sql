@@ -576,3 +576,4 @@ INSERT INTO `rregister` (`rid`, `rname`, `radd`, `rpass`, `rconpass`) VALUES
 USE `ecommerce`;
 
 SET FOREIGN_KEY_CHECKS=1;
+ 
