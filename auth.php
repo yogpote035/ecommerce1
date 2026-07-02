@@ -42,7 +42,7 @@ include 'templates/header.php';
                 <div class="mb-3">
                   <label for="customerCpass" class="form-label">Password</label>
                   <div class="input-group">
-                    <input id="customerCpass" name="Cpass" type="password" class="form-control " required>
+                    <input id="customerCpass" name="Cpass" type="password" class="form-control py-4" required>
                     <div class="input-group-append">
                       <button type="button" class="btn btn-outline-secondary password-toggle" aria-label="Toggle password visibility">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
@@ -114,7 +114,7 @@ include 'templates/header.php';
               <div class="mb-3">
                 <label for="customerPass" class="form-label">Password</label>
                 <div class="input-group">
-                  <input id="customerPass" name="c_pass" type="password" class="form-control" required>
+                  <input id="customerPass" name="c_pass" type="password" class="form-control  py-4" required>
                   <div class="input-group-append">
                     <button type="button" class="btn btn-outline-secondary password-toggle" aria-label="Toggle password visibility">
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -141,7 +141,7 @@ include 'templates/header.php';
                 <div class="mb-3">
                   <label for="adminPass" class="form-label">Password</label>
                   <div class="input-group">
-                    <input id="adminPass" name="apass" type="password" class="form-control" required>
+                    <input id="adminPass" name="apass" type="password" class="form-control py-4" required>
                     <div class="input-group-append">
                       <button type="button" class="btn btn-outline-secondary password-toggle" aria-label="Toggle password visibility">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -205,7 +205,7 @@ include 'templates/header.php';
               <div class="mb-3">
                 <label for="adminRegisterPass" class="form-label">Password</label>
                 <div class="input-group">
-                  <input id="adminRegisterPass" name="apass" type="password" class="form-control" required>
+                  <input id="adminRegisterPass" name="apass" type="password" class="form-control  py-4" required>
                   <div class="input-group-append">
                     <button type="button" class="btn btn-outline-secondary password-toggle" aria-label="Toggle password visibility">
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -233,7 +233,7 @@ include 'templates/header.php';
               <div class="mb-3">
                 <label for="retailerPass" class="form-label">Password</label>
                 <div class="input-group">
-                  <input id="retailerPass" name="rpass" type="password" class="form-control" required>
+                  <input id="retailerPass" name="rpass" type="password" class="form-control py-4" required>
                   <div class="input-group-append">
                     <button type="button" class="btn btn-outline-secondary password-toggle" aria-label="Toggle password visibility">
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -264,7 +264,7 @@ include 'templates/header.php';
               <div class="mb-3">
                 <label for="registerRetailerPass" class="form-label">Password</label>
                 <div class="input-group">
-                  <input id="registerRetailerPass" name="rpass" type="password" class="form-control" required>
+                  <input id="registerRetailerPass" name="rpass" type="password" class="form-control py-4" required>
                   <div class="input-group-append">
                     <button type="button" class="btn btn-outline-secondary password-toggle" aria-label="Toggle password visibility">
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -277,7 +277,7 @@ include 'templates/header.php';
               </div>
               <div class="mb-3">
                 <label for="registerRetailerConfirmPass" class="form-label">Confirm Password</label>
-                <input id="registerRetailerConfirmPass" name="rconpass" type="password" class="form-control" required>
+                <input id="registerRetailerConfirmPass" name="rconpass" type="password" class="form-control py-4" required>
               </div>
               <button type="submit" class="btn btn-success">Sign Up</button>
             </form>

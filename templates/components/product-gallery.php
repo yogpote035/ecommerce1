@@ -10,9 +10,9 @@ $galleryId = $galleryId ?? 'productGallery';
   <!-- Thumbnail Gallery -->
   <?php if (count($images) > 1): ?>
     <div class="gallery-thumbnails-wrapper mt-3">
-      <div class="d-flex gap-2 overflow-auto pb-2" style="scroll-behavior: smooth;">
+      <div class="d-flex gap-2 overflow-auto pb-2 scrollbar-slim" style="scroll-behavior: smooth;">
         <?php foreach ($images as $index => $image):
-          $btnClass = 'product-thumbnail-btn flex-shrink-0';
+          $btnClass = 'product-thumbnail-btn flex-shrink-0 mx-1';
           if ($index === 0) {
             $btnClass .= ' active';
           }

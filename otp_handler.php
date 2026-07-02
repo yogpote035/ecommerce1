@@ -46,7 +46,7 @@ if ($action === 'send_otp') {
     $stmt->close();
 
     if (!$result) {
-        redirectWithToast('danger', 'Email not found.', 'auth.php?role=' . $userType . '&mode=login&otp=1');
+        redirectWithToast('danger', 'User not found with the provided email address.', 'auth.php?role=' . $userType . '&mode=login&otp=1');
     }
 
     $otp = SecurityHelper::generateOTP();

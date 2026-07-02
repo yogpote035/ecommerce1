@@ -163,19 +163,39 @@ $csrfToken = SecurityHelper::generateCSRFToken();
     .app-toast .close:focus {
       opacity: 1;
     }
-    .app-toast-success {
+    .app-toast-success,
+    .toast.app-toast-success {
       background: #16a34a !important;
       color: #fff !important;
     }
-    .app-toast-danger {
+    .app-toast-danger,
+    .toast.app-toast-danger {
       background: #dc2626 !important;
       color: #fff !important;
     }
-    .app-toast-warning {
+    .app-toast-warning,
+    .toast.app-toast-warning {
       background: #f59e0b !important;
       color: #111827 !important;
     }
-    .app-toast-info {
+    .app-toast-info,
+    .toast.app-toast-info {
+      background: #2563eb !important;
+      color: #fff !important;
+    }
+    [data-theme="dark"] .toast.app-toast-success {
+      background: #16a34a !important;
+      color: #fff !important;
+    }
+    [data-theme="dark"] .toast.app-toast-danger {
+      background: #dc2626 !important;
+      color: #fff !important;
+    }
+    [data-theme="dark"] .toast.app-toast-warning {
+      background: #f59e0b !important;
+      color: #111827 !important;
+    }
+    [data-theme="dark"] .toast.app-toast-info {
       background: #2563eb !important;
       color: #fff !important;
     }
