@@ -1,7 +1,7 @@
 <?php
 
 class PaginationHelper {
-    public const PER_PAGE = 10;
+    public const PER_PAGE = 20;
 
     public static function currentPage($key = 'page') {
         $value = isset($_GET[$key]) ? $_GET[$key] : 1;

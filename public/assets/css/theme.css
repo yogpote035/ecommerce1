@@ -226,12 +226,41 @@ button:hover,
   text-decoration: none;
 }
 
+button:focus,
+button:focus-visible,
 .btn:focus,
 .btn:focus-visible,
-button:focus,
-button:focus-visible {
+input:focus,
+input:focus-visible,
+select:focus,
+select:focus-visible,
+textarea:focus,
+textarea:focus-visible,
+a:focus,
+a:focus-visible,
+.nav-link:focus,
+.nav-link:focus-visible,
+.navbar-brand:focus,
+.navbar-brand:focus-visible,
+.theme-button:focus,
+.theme-button:focus-visible,
+.bi:focus,
+.bi:focus-visible {
   outline: none !important;
   box-shadow: none !important;
+}
+
+button,
+.btn,
+input,
+select,
+textarea,
+a,
+.nav-link,
+.navbar-brand,
+.theme-button,
+.bi {
+  outline: none !important;
 }
 
 .btn {
@@ -669,6 +698,24 @@ button:focus-visible {
   background: var(--surface);
   color: var(--text-primary);
   border: 1px solid var(--border);
+}
+
+.order-status-inline-form .input-group-sm .custom-select,
+.order-status-inline-form .input-group-sm .btn {
+  min-height: 38px;
+  height: 38px;
+  padding: 0.45rem 0.8rem;
+  line-height: 1.4;
+}
+
+.order-status-inline-form .input-group-sm .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.order-status-inline-form .custom-select {
+  margin-top: 0;
 }
 
 .input-group-text,
