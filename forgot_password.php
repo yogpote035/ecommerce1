@@ -230,7 +230,7 @@ include 'templates/header.php';
             <div class="form-group">
               <label for="password">New password</label>
               <div class="input-group">
-                <input id="password" type="password" name="password" class="form-control" required>
+                <input id="password" type="password" name="password" class="form-control  py-4" required>
                 <div class="input-group-append">
                   <button type="button" class="btn btn-outline-secondary password-toggle" aria-label="Show password">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
@@ -244,7 +244,7 @@ include 'templates/header.php';
             <div class="form-group">
               <label for="confirm_password">Confirm password</label>
               <div class="input-group">
-                <input id="confirm_password" type="password" name="confirm_password" class="form-control" required>
+                <input id="confirm_password" type="password" name="confirm_password" class="form-control  py-4" required>
                 <div class="input-group-append">
                   <button type="button" class="btn btn-outline-secondary password-toggle" aria-label="Show password">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
