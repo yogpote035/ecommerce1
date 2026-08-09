@@ -75,16 +75,16 @@ include 'templates/header.php';
       <div class="card-body">
         <h2 class="h5">Recent Activity</h2>
         <div class="table-responsive">
-          <table class="table table-sm">
+          <table class="table table-sm table-bordered table-hover">
             <thead><tr><th>When</th><th>User</th><th>Action</th><th>Entity</th></tr></thead>
             <tbody>
               <?php if ($activity && mysqli_num_rows($activity) > 0): ?>
                 <?php while ($row = mysqli_fetch_assoc($activity)): ?>
                   <tr>
-                    <td><?php echo htmlspecialchars($row['created_at']); ?></td>
-                    <td><?php echo htmlspecialchars(($row['user_type'] ?? '') . ' #' . ($row['user_id'] ?? '')); ?></td>
-                    <td><?php echo htmlspecialchars($row['action'] ?? ''); ?></td>
-                    <td><?php echo htmlspecialchars(($row['entity_type'] ?? '') . ' #' . ($row['entity_id'] ?? '')); ?></td>
+                    <td class="align-middle text-break"><?php echo htmlspecialchars($row['created_at']); ?></td>
+                    <td class="align-middle text-break"><?php echo htmlspecialchars(($row['user_type'] ?? '') . ' #' . ($row['user_id'] ?? '')); ?></td>
+                    <td class="align-middle text-break"><?php echo htmlspecialchars($row['action'] ?? ''); ?></td>
+                    <td class="align-middle text-break"><?php echo htmlspecialchars(($row['entity_type'] ?? '') . ' #' . ($row['entity_id'] ?? '')); ?></td>
                   </tr>
                 <?php endwhile; ?>
               <?php else: ?>
@@ -102,16 +102,16 @@ include 'templates/header.php';
       <div class="card-body">
         <h2 class="h5">Recent Errors</h2>
         <div class="table-responsive">
-          <table class="table table-sm">
+          <table class="table table-sm table-bordered table-hover">
             <thead><tr><th>When</th><th>Severity</th><th>Message</th><th>Location</th></tr></thead>
             <tbody>
               <?php if ($errors && mysqli_num_rows($errors) > 0): ?>
                 <?php while ($row = mysqli_fetch_assoc($errors)): ?>
                   <tr>
-                    <td><?php echo htmlspecialchars($row['created_at']); ?></td>
-                    <td><span class="badge badge-secondary"><?php echo htmlspecialchars($row['severity'] ?? 'error'); ?></span></td>
-                    <td><?php echo htmlspecialchars($row['error_message'] ?? ''); ?></td>
-                    <td><?php echo htmlspecialchars(($row['file_path'] ?? '') . ':' . ($row['line_number'] ?? '')); ?></td>
+                    <td class="align-middle text-break"><?php echo htmlspecialchars($row['created_at']); ?></td>
+                    <td class="align-middle"><span class="badge badge-secondary"><?php echo htmlspecialchars($row['severity'] ?? 'error'); ?></span></td>
+                    <td class="align-middle text-break"><?php echo htmlspecialchars($row['error_message'] ?? ''); ?></td>
+                    <td class="align-middle text-break"><?php echo htmlspecialchars(($row['file_path'] ?? '') . ':' . ($row['line_number'] ?? '')); ?></td>
                   </tr>
                 <?php endwhile; ?>
               <?php else: ?>
