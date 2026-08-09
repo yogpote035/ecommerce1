@@ -5,7 +5,7 @@ require_once __DIR__ . '/config/Database.php';
 function getDbConnection($dbname = DB_NAME) {
     $config = getDatabaseConfig($dbname);
 
-    $conn = @mysqli_connect($config['host'], $config['user'], $config['pass'], $config['name']);
+    $conn = @mysqli_connect($config['host'], $config['user'], $config['pass'], $config['name'], $config['port']);
     if ($conn) {
         mysqli_set_charset($conn, $config['charset']);
         return $conn;
