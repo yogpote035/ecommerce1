@@ -428,9 +428,9 @@ include __DIR__ . '/../templates/header.php';
                                         <input type="hidden" name="action" value="restore">
                                         <input type="hidden" name="file" value="<?php echo htmlspecialchars($backup['name']); ?>">
                                         <div class="input-group input-group-sm">
-                                            <input type="text" name="confirm_restore" class="form-control" placeholder="Type RESTORE">
+                                            <input type="text" name="confirm_restore" class="form-control p-4" placeholder="Type RESTORE">
                                             <div class="input-group-append">
-                                                <button type="submit" class="btn btn-warning" onclick="return confirm('Restore database from this backup? Current data may be replaced.')">Restore</button>
+                                                <button type="submit" class="btn btn-warning btn-sm" onclick="return confirm('Restore database from this backup? Current data may be replaced.')">Restore</button>
                                             </div>
                                         </div>
                                     </form>
