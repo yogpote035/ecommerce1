@@ -11,7 +11,7 @@ if (empty($_SESSION['admin_logged_in']) || empty($_SESSION['admin_id'])) {
 mysqli_query($conn, "CREATE TABLE IF NOT EXISTS activity_logs (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
-    user_type ENUM('customer', 'admin', 'retailer') DEFAULT 'customer',
+    user_type ENUM('customer', 'admin') DEFAULT 'customer',
     action VARCHAR(255),
     entity_type VARCHAR(100),
     entity_id INT,

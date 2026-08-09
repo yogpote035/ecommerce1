@@ -11,12 +11,11 @@ include 'templates/header.php';
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
           <div>
             <h1 class="h3">Account Access</h1>
-            <p class="text-muted mb-0">Use email and password for both Customer and Admin. Sign up once and the app generates your account ID automatically.</p>
+            <p class="text-muted mb-0">Use email and password for customer or admin accounts. Sign up once and the app generates your account ID automatically.</p>
           </div>
           <div class="btn-group auth-toggle mt-3 mt-md-0" role="group" aria-label="User type toggle">
             <button type="button" class="btn btn-outline-primary active" id="roleCustomer">Customer</button>
             <button type="button" class="btn btn-outline-primary" id="roleAdmin">Admin</button>
-            <button type="button" class="btn btn-outline-primary" id="roleRetailer">Retailer</button>
           </div>
         </div>
       </div>
@@ -220,68 +219,7 @@ include 'templates/header.php';
             </form>
           </div>
 
-          <div class="auth-panel d-none" data-role="retailer" data-mode="login">
-            <h2 class="h5 mb-3">Retailer Login</h2>
-            <p class="text-muted small">Sign in with your retailer account to manage catalog items.</p>
-            <form action="Rlogin.php" method="post">
-              <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
-              <input type="hidden" name="action" value="login">
-              <div class="mb-3">
-                <label for="retailerName" class="form-label">Retailer Name</label>
-                <input id="retailerName" name="rname" type="text" class="form-control" required>
-              </div>
-              <div class="mb-3">
-                <label for="retailerPass" class="form-label">Password</label>
-                <div class="input-group">
-                  <input id="retailerPass" name="rpass" type="password" class="form-control py-4" required>
-                  <div class="input-group-append">
-                    <button type="button" class="btn btn-outline-secondary password-toggle" aria-label="Toggle password visibility">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
-                        <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <button type="submit" class="btn btn-primary">Login</button>
-            </form>
-          </div>
 
-          <div class="auth-panel d-none" data-role="retailer" data-mode="signup">
-            <h2 class="h5 mb-3">Retailer Sign Up</h2>
-            <form action="Rlogin.php" method="post">
-              <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
-              <input type="hidden" name="action" value="register">
-              <div class="mb-3">
-                <label for="registerRetailerName" class="form-label">Name</label>
-                <input id="registerRetailerName" name="rname" type="text" class="form-control" required>
-              </div>
-              <div class="mb-3">
-                <label for="registerRetailerAddress" class="form-label">Address</label>
-                <input id="registerRetailerAddress" name="radd" type="text" class="form-control" required>
-              </div>
-              <div class="mb-3">
-                <label for="registerRetailerPass" class="form-label">Password</label>
-                <div class="input-group">
-                  <input id="registerRetailerPass" name="rpass" type="password" class="form-control py-4" required>
-                  <div class="input-group-append">
-                    <button type="button" class="btn btn-outline-secondary password-toggle" aria-label="Toggle password visibility">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
-                        <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div class="mb-3">
-                <label for="registerRetailerConfirmPass" class="form-label">Confirm Password</label>
-                <input id="registerRetailerConfirmPass" name="rconpass" type="password" class="form-control py-4" required>
-              </div>
-              <button type="submit" class="btn btn-success">Sign Up</button>
-            </form>
-          </div>
         </div>
       </div>
     </div>
@@ -291,8 +229,7 @@ include 'templates/header.php';
 <script>
   const roleButtons = {
     customer: document.getElementById('roleCustomer'),
-    admin: document.getElementById('roleAdmin'),
-    retailer: document.getElementById('roleRetailer')
+    admin: document.getElementById('roleAdmin')
   };
   const modeButtons = {
     login: document.getElementById('modeLogin'),
@@ -314,7 +251,6 @@ include 'templates/header.php';
     selectedRole = role;
     roleButtons.customer.classList.toggle('active', role === 'customer');
     roleButtons.admin.classList.toggle('active', role === 'admin');
-    roleButtons.retailer.classList.toggle('active', role === 'retailer');
     updatePanels();
   }
 
@@ -350,7 +286,6 @@ include 'templates/header.php';
 
     roleButtons.customer.addEventListener('click', () => setActiveRole('customer'));
     roleButtons.admin.addEventListener('click', () => setActiveRole('admin'));
-    roleButtons.retailer.addEventListener('click', () => setActiveRole('retailer'));
     modeButtons.login.addEventListener('click', () => setActiveMode('login'));
     modeButtons.signup.addEventListener('click', () => setActiveMode('signup'));
 
@@ -366,7 +301,7 @@ include 'templates/header.php';
     const mode = params.get('mode');
     const otp = params.get('otp') === '1';
     return {
-      role: role === 'admin' ? 'admin' : role === 'retailer' ? 'retailer' : 'customer',
+      role: role === 'admin' ? 'admin' : 'customer',
       mode: mode === 'signup' ? 'signup' : 'login',
       otp: otp
     };

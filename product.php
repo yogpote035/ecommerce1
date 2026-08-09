@@ -7,7 +7,7 @@ $productId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $product = null;
 $images = [];
 $helper = new ProductImageHelper($conn);
-$isRetailer = !empty($_SESSION['retailer_logged_in']) || !empty($_SESSION['rname']);
+$isRetailer = false;
 
 if ($productId > 0) {
     $stmt = mysqli_prepare($conn, 'SELECT Apid, apname, apbrand, apcategory, apqty, apprice, apdescription, apimage FROM apadd WHERE Apid = ? LIMIT 1');
@@ -291,7 +291,6 @@ include 'templates/header.php';
               <?php echo htmlspecialchars($product['apdescription'] ?? 'No description available.'); ?>
             </div>
 
-            <?php if (!$isRetailer): ?>
             <!-- Action Buttons -->
             <div class="action-buttons">
               <a href="add_cart.php?id=<?php echo urlencode($productId); ?>" class="btn btn-primary btn-lg">
@@ -309,7 +308,6 @@ include 'templates/header.php';
                 ← Continue Shopping
               </a>
             </div>
-            <?php endif; ?>
 
             <!-- Product Info -->
             <div style="border-top: 1px solid #e9ecef; padding-top: 20px;">
@@ -344,7 +342,7 @@ include 'templates/header.php';
                 'stock' => $relatedProduct['apqty'],
                 'rating' => 0,
               ];
-              $productCardMode = $isRetailer ? 'retailer' : '';
+              $productCardMode = '';
               include 'templates/components/product-card.php'; 
               unset($productCardMode);
             ?>

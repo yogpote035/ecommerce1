@@ -384,7 +384,7 @@ class SecurityHelper {
      * @param string $entityType - Type of entity
      * @param int $entityId - Entity ID
      * @param int|null $userId - User ID
-     * @param string $userType - 'customer', 'admin', or 'retailer'
+     * @param string $userType - 'customer' or 'admin'
      */
     public static function logActivity($conn, $action, $entityType, $entityId = null, $userId = null, $userType = 'customer') {
         try {
@@ -393,7 +393,7 @@ class SecurityHelper {
             $userAgent = self::getUserAgent();
             $userId = $userId !== null ? (int)$userId : null;
             $entityId = $entityId !== null ? (int)$entityId : null;
-            $userType = in_array($userType, ['customer', 'admin', 'retailer'], true) ? $userType : 'customer';
+            $userType = in_array($userType, ['customer', 'admin'], true) ? $userType : 'customer';
             
             $stmt = $conn->prepare("
                 INSERT INTO activity_logs (user_id, user_type, action, entity_type, entity_id, ip_address, user_agent)
@@ -476,7 +476,7 @@ class SecurityHelper {
         $conn->query("CREATE TABLE IF NOT EXISTS activity_logs (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT,
-            user_type ENUM('customer', 'admin', 'retailer') DEFAULT 'customer',
+            user_type ENUM('customer', 'admin') DEFAULT 'customer',
             action VARCHAR(255),
             entity_type VARCHAR(100),
             entity_id INT,
@@ -486,11 +486,11 @@ class SecurityHelper {
             KEY idx_user_created (user_id, created_at),
             KEY idx_action (user_type, action)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-        $conn->query("ALTER TABLE activity_logs MODIFY user_type ENUM('customer', 'admin', 'retailer') DEFAULT 'customer'");
+        $conn->query("ALTER TABLE activity_logs MODIFY user_type ENUM('customer', 'admin') DEFAULT 'customer'");
 
         $columns = [
             'user_id' => 'ALTER TABLE activity_logs ADD COLUMN user_id INT NULL AFTER id',
-            'user_type' => "ALTER TABLE activity_logs ADD COLUMN user_type ENUM('customer', 'admin', 'retailer') DEFAULT 'customer' AFTER user_id",
+            'user_type' => "ALTER TABLE activity_logs ADD COLUMN user_type ENUM('customer', 'admin') DEFAULT 'customer' AFTER user_id",
             'action' => 'ALTER TABLE activity_logs ADD COLUMN action VARCHAR(255) NULL AFTER user_type',
             'entity_type' => 'ALTER TABLE activity_logs ADD COLUMN entity_type VARCHAR(100) NULL AFTER action',
             'entity_id' => 'ALTER TABLE activity_logs ADD COLUMN entity_id INT NULL AFTER entity_type',

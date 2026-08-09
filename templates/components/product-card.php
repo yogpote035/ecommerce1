@@ -19,10 +19,10 @@ $productBrand = htmlspecialchars($product['brand'] ?? '');
 $productCategory = htmlspecialchars($product['category'] ?? '');
 $productStock = htmlspecialchars($product['stock'] ?? '');
 $productCardMode = $productCardMode ?? '';
-$isRetailerCard = $productCardMode === 'retailer' || !empty($_SESSION['retailer_logged_in']) || !empty($_SESSION['rname']);
+$isRetailerCard = false;
 
 // Check if user is logged in
-$isLoggedIn = !empty($_SESSION['admin_logged_in']) || !empty($_SESSION['customer_logged_in']) || !empty($_SESSION['retailer_logged_in']) || !empty($_SESSION['rname']);
+$isLoggedIn = !empty($_SESSION['admin_logged_in']) || !empty($_SESSION['customer_logged_in']);
 $cartUrl = $isLoggedIn ? 'add_cart.php?id=' . $productId : 'auth.php?redirect=' . urlencode('product.php?id=' . $productId);
 $detailsUrl = 'product.php?id=' . $productId;
 $customerIdForWishlist = $_SESSION['customer_id'] ?? $_SESSION['cid'] ?? 0;
@@ -53,14 +53,9 @@ $wishlistToken = !$isRetailerCard ? SecurityHelper::generateCSRFToken() : '';
       </div>
       <div class="d-flex justify-content-between align-items-center mb-3">
         <span class="badge rounded-pill bg-secondary py-2 px-3"><?php echo $productRating; ?> &#9733;</span>
-        <?php if ($isRetailerCard): ?>
-          <a href="<?php echo htmlspecialchars($detailsUrl); ?>" class="btn btn-outline-primary">View</a>
-        <?php else: ?>
-          <a href="<?php echo htmlspecialchars($cartUrl); ?>" class="btn btn-primary">Add to cart</a>
-        <?php endif; ?>
+        <a href="<?php echo htmlspecialchars($cartUrl); ?>" class="btn btn-primary">Add to cart</a>
       </div>
-      <?php if (!$isRetailerCard): ?>
-        <form method="post" action="wishlist_action.php" class="mb-0">
+      <form method="post" action="wishlist_action.php" class="mb-0">
           <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($wishlistToken); ?>">
           <input type="hidden" name="product_id" value="<?php echo $productId; ?>">
           <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($_SERVER['REQUEST_URI'] ?? 'index.php?page=1'); ?>">
@@ -68,7 +63,6 @@ $wishlistToken = !$isRetailerCard ? SecurityHelper::generateCSRFToken() : '';
             <?php echo $isWishlisted ? 'Saved to wishlist' : 'Save to wishlist'; ?>
           </button>
         </form>
-      <?php endif; ?>
     </div>
   </div>
 </div>

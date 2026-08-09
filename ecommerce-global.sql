@@ -10,7 +10,7 @@ DROP TABLE IF EXISTS `activity_logs`;
 CREATE TABLE `activity_logs` (
   `id` int NOT NULL AUTO_INCREMENT,
   `user_id` int DEFAULT NULL,
-  `user_type` enum('customer','admin','retailer') DEFAULT 'customer',
+  `user_type` enum('customer','admin') DEFAULT 'customer',
   `action` varchar(255) DEFAULT NULL,
   `entity_type` varchar(100) DEFAULT NULL,
   `entity_id` int DEFAULT NULL,
@@ -555,23 +555,6 @@ CREATE TABLE `wishlist` (
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `wishlist` (`id`, `customer_id`, `product_id`, `created_at`) VALUES ('1', '2', '33', '2026-07-01 11:17:16');
-
-CREATE DATABASE IF NOT EXISTS `retailler` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `retailler`;
-
-DROP TABLE IF EXISTS `rregister`;
-CREATE TABLE `rregister` (
-  `rid` int NOT NULL AUTO_INCREMENT,
-  `rname` varchar(100) NOT NULL,
-  `radd` varchar(255) DEFAULT NULL,
-  `rpass` varchar(255) NOT NULL,
-  `rconpass` varchar(255) NOT NULL,
-  PRIMARY KEY (`rid`),
-  UNIQUE KEY `rname` (`rname`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-INSERT INTO `rregister` (`rid`, `rname`, `radd`, `rpass`, `rconpass`) VALUES
-  (1, 'demo_retailer', 'Demo Address', '$2y$10$WPpLeMFeK.vsVQ4ciHFQyOkJbDdb2V8Qj4QaKg/aZLjKiAHKmR03W', '$2y$10$WPpLeMFeK.vsVQ4ciHFQyOkJbDdb2V8Qj4QaKg/aZLjKiAHKmR03W');
 
 USE `ecommerce`;
 

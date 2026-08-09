@@ -3,8 +3,8 @@
 require_once __DIR__ . '/../../helpers/CategoryHelper.php';
 $isAdmin = !empty($_SESSION['admin_logged_in']);
 $isCustomer = !empty($_SESSION['customer_logged_in']);
-$isRetailer = !empty($_SESSION['retailer_logged_in']) || !empty($_SESSION['rname']);
-$isLoggedIn = $isAdmin || $isCustomer || $isRetailer;
+$isRetailer = false;
+$isLoggedIn = $isAdmin || $isCustomer;
 $currentPage = basename($_SERVER['PHP_SELF']);
 $categoryHelperForNav = new CategoryHelper($conn);
 $navCategories = array_slice($categoryHelperForNav->getCategoriesHierarchy(), 0, 8);
@@ -36,13 +36,6 @@ if ($isAdmin) {
         ['href' => 'Track.php', 'label' => 'Track Orders'],
         ['href' => 'Contact.php', 'label' => 'Contact'],
     ];
-} elseif ($isRetailer) {
-    $navItems = [
-        ['href' => 'Rmain.php', 'label' => 'Dashboard'],
-        ['href' => 'Rview.php', 'label' => 'Catalog'],
-        ['href' => 'Radd.php', 'label' => 'Add Product'],
-    ];
-    $moreNavItems = [];
 } else {
     $navItems = [
         ['href' => 'Home.php', 'label' => 'Home'],
@@ -137,7 +130,7 @@ if ($customerId > 0) {
             </svg>
           </button>
         </li>
-        <?php if (!$isAdmin && !$isRetailer): ?>
+        <?php if (!$isAdmin): ?>
           <li class="nav-item ml-lg-3 mt-2 mt-lg-0">
             <a class="btn btn-primary position-relative d-flex align-items-center justify-content-center" href="<?php echo htmlspecialchars(app_url('view_cart.php')); ?>" aria-label="View cart">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cart-plus-fill" viewBox="0 0 16 16" aria-hidden="true">

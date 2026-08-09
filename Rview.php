@@ -1,21 +1,8 @@
 <?php
 require_once 'init.php';
-require_once 'helpers/CategoryHelper.php';
-$siteTitle = 'Retail Product Catalog';
-
-if (empty($_SESSION['retailer_logged_in']) && empty($_SESSION['rname'])) {
-    $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Please login as retailer to view products.'];
-    header('Location: auth.php?role=retailer&mode=login');
-    exit;
-}
-
-$category = trim($_GET['category'] ?? '');
-$subcategory = trim($_GET['subcategory'] ?? '');
-$categoryHelper = new CategoryHelper($conn);
-$categoryHierarchy = $categoryHelper->getCategoriesHierarchy();
-$itemsPerPage = PaginationHelper::PER_PAGE;
-$currentPage = PaginationHelper::currentPage();
-$offset = PaginationHelper::offset($currentPage, $itemsPerPage);
+$_SESSION['toast'] = ['type' => 'danger', 'message' => 'Retailer functionality is no longer available. Please use customer or admin access.'];
+header('Location: auth.php');
+exit;
 
 $conditions = [];
 $params = [];
