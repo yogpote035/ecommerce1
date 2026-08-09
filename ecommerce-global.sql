@@ -1,7 +1,7 @@
 -- Global ecommerce schema and sample data
 -- Generated from backup file for one-step database setup
 
-CREATE DATABASE IF NOT EXISTS `ecommerce` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+CREATE DATABASE IF NOT EXISTS `ecommerce` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `ecommerce`;
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -20,7 +20,7 @@ CREATE TABLE `activity_logs` (
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`,`created_at`),
   KEY `user_type` (`user_type`,`action`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `activity_logs` (`id`, `user_id`, `user_type`, `action`, `entity_type`, `entity_id`, `ip_address`, `user_agent`, `created_at`) VALUES ('1', NULL, 'admin', 'automatic_backup', 'backup', NULL, 'UNKNOWN', 'UNKNOWN', '2026-07-01 10:16:40');
 INSERT INTO `activity_logs` (`id`, `user_id`, `user_type`, `action`, `entity_type`, `entity_id`, `ip_address`, `user_agent`, `created_at`) VALUES ('2', NULL, 'admin', 'automatic_backup', 'backup', NULL, 'UNKNOWN', 'UNKNOWN', '2026-07-01 10:17:19');
@@ -38,7 +38,7 @@ CREATE TABLE `apadd` (
   `apdescription` text,
   `apimage` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`Apid`)
-) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `apadd` (`Apid`, `apname`, `apbrand`, `apcategory`, `apqty`, `apprice`, `apdescription`, `apimage`) VALUES ('1', 'Classic Earrings', 'Luxora', 'Accessories', '30', '799.00', NULL, 'images/products/accessories.jpg');
 INSERT INTO `apadd` (`Apid`, `apname`, `apbrand`, `apcategory`, `apqty`, `apprice`, `apdescription`, `apimage`) VALUES ('2', 'Silver Necklace', 'Glow', 'Accessories', '28', '899.00', NULL, 'images/products/accessories1.jpg');
@@ -84,7 +84,7 @@ CREATE TABLE `aregister` (
   PRIMARY KEY (`aid`),
   UNIQUE KEY `email` (`email`),
   KEY `email_2` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `aregister` (`aid`, `aname`, `email`, `aadd`, `apass`) VALUES ('1', 'admin', 'admin@gmail.com', 'Main Office', 'admin123');
 INSERT INTO `aregister` (`aid`, `aname`, `email`, `aadd`, `apass`) VALUES ('2', 'Yogesh Dattatray pote', 'yogpote035@gmail.com', 'Shree Balaji PG New / Amber Apartments', '$2y$12$yYd.RsIfHFyxWG20TltMb.zwj0AfNO0g0nBhehfOECQz2.f0ohGxi');
@@ -101,7 +101,7 @@ CREATE TABLE `backup_logs` (
   `notes` text,
   PRIMARY KEY (`id`),
   KEY `created_at` (`created_at`,`backup_type`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `backup_logs` (`id`, `backup_file`, `backup_size`, `backup_type`, `status`, `created_at`, `created_by`, `notes`) VALUES ('1', 'auto_backup_20260701_064640.sql', '68140', 'automatic', 'success', '2026-07-01 10:16:40', NULL, 'Created by auto-backup.php CLI runner');
 INSERT INTO `backup_logs` (`id`, `backup_file`, `backup_size`, `backup_type`, `status`, `created_at`, `created_by`, `notes`) VALUES ('2', 'auto_backup_20260701_064719.sql', '68670', 'automatic', 'success', '2026-07-01 10:17:19', NULL, 'Created by auto-backup.php CLI runner');
@@ -118,7 +118,7 @@ CREATE TABLE `cart_items` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_customer_product` (`customer_id`,`product_id`),
   KEY `idx_customer_id` (`customer_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 DROP TABLE IF EXISTS `categories`;
@@ -136,7 +136,7 @@ CREATE TABLE `categories` (
   UNIQUE KEY `name` (`name`),
   UNIQUE KEY `slug` (`slug`),
   KEY `slug_2` (`slug`,`is_active`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `categories` (`id`, `name`, `slug`, `icon`, `description`, `image`, `is_active`, `created_at`, `updated_at`) VALUES ('1', 'Clothes', 'clothes', '­ƒæò', 'Clothing and apparel', NULL, '1', '2026-06-29 12:59:39', '2026-06-29 12:59:39');
 INSERT INTO `categories` (`id`, `name`, `slug`, `icon`, `description`, `image`, `is_active`, `created_at`, `updated_at`) VALUES ('2', 'Electronics', 'electronics', '­ƒô▒', 'Electronic devices and gadgets', NULL, '1', '2026-06-29 12:59:39', '2026-06-29 12:59:39');
@@ -158,7 +158,7 @@ CREATE TABLE `child_categories` (
   UNIQUE KEY `sub_category_id` (`sub_category_id`,`slug`),
   KEY `is_active` (`is_active`),
   CONSTRAINT `child_categories_ibfk_1` FOREIGN KEY (`sub_category_id`) REFERENCES `sub_categories` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `child_categories` (`id`, `sub_category_id`, `name`, `slug`, `description`, `is_active`, `created_at`, `updated_at`) VALUES ('1', '1', 'Topwear', 'topwear', NULL, '1', '2026-06-29 12:59:39', '2026-06-29 12:59:39');
 INSERT INTO `child_categories` (`id`, `sub_category_id`, `name`, `slug`, `description`, `is_active`, `created_at`, `updated_at`) VALUES ('2', '1', 'Bottomwear', 'bottomwear', NULL, '1', '2026-06-29 12:59:39', '2026-06-29 12:59:39');
@@ -175,7 +175,7 @@ CREATE TABLE `cregister` (
   `Cpass` varchar(255) NOT NULL,
   `Cconpass` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`Cid`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `cregister` (`Cid`, `Cname`, `Cemail`, `Cadd`, `Ccontact`, `Cpass`, `Cconpass`) VALUES ('1', 'John Doe', 'john@example.com', 'Mumbai', '9876543210', 'pass123', 'pass123');
 INSERT INTO `cregister` (`Cid`, `Cname`, `Cemail`, `Cadd`, `Ccontact`, `Cpass`, `Cconpass`) VALUES ('2', 'Yogesh Dattatray pote', 'yogpote035@gmail.com', 'Shree Balaji PG New / Amber Apartments', '8999390368', '$2y$12$AGno8lPiQlzPtlfbNFR56O1i1b43lT8.d2OeuJNLptw.I1Ezr/Tfa', '$2y$12$AGno8lPiQlzPtlfbNFR56O1i1b43lT8.d2OeuJNLptw.I1Ezr/Tfa');
@@ -194,7 +194,7 @@ CREATE TABLE `error_logs` (
   PRIMARY KEY (`id`),
   KEY `severity` (`severity`,`created_at`),
   KEY `created_at` (`created_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 DROP TABLE IF EXISTS `order_status_log`;
@@ -208,7 +208,7 @@ CREATE TABLE `order_status_log` (
   PRIMARY KEY (`id`),
   KEY `order_id` (`order_id`,`status`),
   CONSTRAINT `order_status_log_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`oid`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `order_status_log` (`id`, `order_id`, `status`, `notes`, `updated_by`, `created_at`) VALUES ('6', '10', 'Pending', 'Order created', NULL, '2026-06-30 09:40:35');
 INSERT INTO `order_status_log` (`id`, `order_id`, `status`, `notes`, `updated_by`, `created_at`) VALUES ('7', '11', 'Pending', 'Order created', NULL, '2026-06-30 09:42:32');
@@ -263,7 +263,7 @@ CREATE TABLE `orders` (
   KEY `idx_orders_customer` (`cid`),
   KEY `idx_orders_created` (`created_at`),
   CONSTRAINT `orders_fk_cid` FOREIGN KEY (`cid`) REFERENCES `cregister` (`Cid`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `orders` (`oid`, `pid`, `cid`, `cost`, `source`, `destination`, `payment_status`, `created_at`, `updated_at`) VALUES ('1', '1', '1', '2499.00', 'Mumbai', 'Pune', 'Pending', '2026-06-29 12:59:39', '2026-06-29 12:59:39');
 INSERT INTO `orders` (`oid`, `pid`, `cid`, `cost`, `source`, `destination`, `payment_status`, `created_at`, `updated_at`) VALUES ('2', '30', '1', '3500.00', 'Customer: Yogesh Dattatray pote | Address: Shree Balaji PG New / Amber Apartments\r\nlane no 11, veerbhadra nagar, Baner | Contact: 08999390368', 'Payment: Cash on Delivery', 'Pending', '2026-06-29 12:59:39', '2026-06-29 12:59:39');
@@ -316,7 +316,7 @@ CREATE TABLE `otp_codes` (
   PRIMARY KEY (`id`),
   KEY `email` (`email`,`expires_at`),
   KEY `user_id` (`user_id`,`user_type`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `otp_codes` (`id`, `user_id`, `user_type`, `email`, `otp_code`, `attempts`, `is_used`, `created_at`, `expires_at`) VALUES ('1', NULL, 'customer', 'yogpote035@gmail.com', '869477', '1', '0', '2026-06-30 14:08:00', '2026-06-30 10:43:00');
 INSERT INTO `otp_codes` (`id`, `user_id`, `user_type`, `email`, `otp_code`, `attempts`, `is_used`, `created_at`, `expires_at`) VALUES ('2', NULL, 'customer', 'yogpote035@gmail.com', '208497', '1', '0', '2026-06-30 14:09:16', '2026-06-30 10:44:16');
@@ -339,7 +339,7 @@ CREATE TABLE `password_resets` (
   PRIMARY KEY (`id`),
   KEY `idx_email_type` (`email`,`user_type`),
   KEY `idx_expires` (`expires_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `password_resets` (`id`, `user_type`, `email`, `token_hash`, `is_used`, `created_at`, `expires_at`) VALUES ('1', 'customer', 'yogpote035@gmail.com', '5f1c1b75ccb0ded3f45c9245203f53430629457da9aa9be2892559d81ab7a3c0', '0', '2026-07-01 10:26:11', '2026-07-01 07:26:11');
 INSERT INTO `password_resets` (`id`, `user_type`, `email`, `token_hash`, `is_used`, `created_at`, `expires_at`) VALUES ('2', 'customer', 'yogpote035@gmail.com', '99a74941472800c29692557d9d397c8231b367d07f7e2cec2c8dde2596ae0452', '0', '2026-07-01 10:27:10', '2026-07-01 07:27:10');
@@ -366,7 +366,7 @@ CREATE TABLE `payment_logs` (
   KEY `payment_id` (`payment_id`),
   KEY `event_type` (`event_type`),
   KEY `created_at` (`created_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `payment_logs` (`id`, `order_id`, `payment_id`, `event_type`, `request_data`, `response_data`, `razorpay_response`, `ip_address`, `status`, `error_message`, `created_at`) VALUES ('6', '10', 'order_T7hpSmPCERaL5I', 'order_created', '[]', '{\"id\": \"order_T7hpSmPCERaL5I\", \"notes\": {\"order_id\": \"10\", \"customer_email\": \"yogpote035@gmail.com\", \"customer_phone\": \"8999390368\"}, \"amount\": 40000, \"entity\": \"order\", \"status\": \"created\", \"receipt\": \"ORDER-10-1782792635\", \"attempts\": 0, \"currency\": \"INR\", \"offer_id\": null, \"amount_due\": 40000, \"created_at\": 1782792643, \"amount_paid\": 0}', NULL, '::1', 'success', '', '2026-06-30 09:40:36');
 INSERT INTO `payment_logs` (`id`, `order_id`, `payment_id`, `event_type`, `request_data`, `response_data`, `razorpay_response`, `ip_address`, `status`, `error_message`, `created_at`) VALUES ('7', '11', 'order_T7hrWFwkAd26yD', 'order_created', '[]', '{\"id\": \"order_T7hrWFwkAd26yD\", \"notes\": {\"order_id\": \"11\", \"customer_email\": \"yogpote035@gmail.com\", \"customer_phone\": \"8999390368\"}, \"amount\": 40000, \"entity\": \"order\", \"status\": \"created\", \"receipt\": \"ORDER-11-1782792752\", \"attempts\": 0, \"currency\": \"INR\", \"offer_id\": null, \"amount_due\": 40000, \"created_at\": 1782792759, \"amount_paid\": 0}', NULL, '::1', 'success', '', '2026-06-30 09:42:32');
@@ -417,7 +417,7 @@ CREATE TABLE `payments` (
   KEY `order_id` (`order_id`,`payment_status`),
   KEY `payment_id` (`payment_id`),
   CONSTRAINT `payments_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`oid`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `payments` (`id`, `order_id`, `payment_method`, `payment_id`, `transaction_reference`, `payment_status`, `amount`, `created_at`, `updated_at`, `notes`) VALUES ('1', '10', 'Razorpay', '', 'order_T7hpSmPCERaL5I', 'Pending', '400.00', '2026-06-30 09:40:36', '2026-06-30 09:40:36', NULL);
 INSERT INTO `payments` (`id`, `order_id`, `payment_method`, `payment_id`, `transaction_reference`, `payment_status`, `amount`, `created_at`, `updated_at`, `notes`) VALUES ('2', '11', 'Razorpay', '', 'order_T7hrWFwkAd26yD', 'Pending', '400.00', '2026-06-30 09:42:32', '2026-06-30 09:42:32', NULL);
@@ -464,7 +464,7 @@ CREATE TABLE `product_images` (
   PRIMARY KEY (`id`),
   KEY `product_id` (`product_id`,`is_primary`),
   CONSTRAINT `product_images_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `apadd` (`Apid`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `product_images` (`id`, `product_id`, `image_path`, `alt_text`, `is_primary`, `sort_order`, `created_at`) VALUES ('1', '32', 'C:\\xampp\\htdocs\\ecommerce1\\helpers/../uploads/products/1782803291_4_1.jpg', 'Sample Test Multiple imgs', '1', '0', '2026-06-30 12:38:11');
 INSERT INTO `product_images` (`id`, `product_id`, `image_path`, `alt_text`, `is_primary`, `sort_order`, `created_at`) VALUES ('2', '32', 'C:\\xampp\\htdocs\\ecommerce1\\helpers/../uploads/products/1782803291_98434e2300ecd15a39f1ca5dab8f2518.jpeg', 'Sample Test Multiple imgs', '0', '0', '2026-06-30 12:38:11');
@@ -492,7 +492,7 @@ CREATE TABLE `remember_tokens` (
   UNIQUE KEY `remember_selector_unique` (`selector`),
   KEY `idx_user` (`user_id`,`user_type`),
   KEY `idx_expires` (`expires_at`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `remember_tokens` (`id`, `user_id`, `user_type`, `selector`, `token_hash`, `expires_at`, `created_at`) VALUES ('1', '2', 'customer', '484339a9fd3c88c7', '9174eabbdcc6032842525c1dae76f9a796d5a9356dc45028decb464c38e7e5d3', '2026-07-31 07:10:45', '2026-07-01 10:40:45');
 
@@ -507,7 +507,7 @@ CREATE TABLE `search_history` (
   UNIQUE KEY `customer_id` (`customer_id`,`search_query`),
   KEY `customer_id_2` (`customer_id`,`created_at`),
   CONSTRAINT `search_history_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `cregister` (`Cid`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `search_history` (`id`, `customer_id`, `search_query`, `created_at`, `updated_at`) VALUES ('1', '2', 'coll', '2026-07-01 11:28:31', '2026-07-01 11:45:20');
 INSERT INTO `search_history` (`id`, `customer_id`, `search_query`, `created_at`, `updated_at`) VALUES ('3', '2', 'colle', '2026-07-01 11:28:40', '2026-07-01 11:28:40');
@@ -531,7 +531,7 @@ CREATE TABLE `sub_categories` (
   UNIQUE KEY `category_id` (`category_id`,`slug`),
   KEY `is_active` (`is_active`),
   CONSTRAINT `sub_categories_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `sub_categories` (`id`, `category_id`, `name`, `slug`, `description`, `image`, `is_active`, `created_at`, `updated_at`) VALUES ('1', '1', 'Men', 'men', 'Mens clothing', NULL, '1', '2026-06-29 12:59:39', '2026-06-29 12:59:39');
 INSERT INTO `sub_categories` (`id`, `category_id`, `name`, `slug`, `description`, `image`, `is_active`, `created_at`, `updated_at`) VALUES ('2', '1', 'Women', 'women', 'Womens clothing', NULL, '1', '2026-06-29 12:59:39', '2026-06-29 12:59:39');
@@ -552,11 +552,11 @@ CREATE TABLE `wishlist` (
   KEY `customer_id_2` (`customer_id`),
   CONSTRAINT `wishlist_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `cregister` (`Cid`) ON DELETE CASCADE,
   CONSTRAINT `wishlist_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `apadd` (`Apid`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `wishlist` (`id`, `customer_id`, `product_id`, `created_at`) VALUES ('1', '2', '33', '2026-07-01 11:17:16');
 
-CREATE DATABASE IF NOT EXISTS `retailler` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+CREATE DATABASE IF NOT EXISTS `retailler` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `retailler`;
 
 DROP TABLE IF EXISTS `rregister`;
@@ -568,7 +568,7 @@ CREATE TABLE `rregister` (
   `rconpass` varchar(255) NOT NULL,
   PRIMARY KEY (`rid`),
   UNIQUE KEY `rname` (`rname`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `rregister` (`rid`, `rname`, `radd`, `rpass`, `rconpass`) VALUES
   (1, 'demo_retailer', 'Demo Address', '$2y$10$WPpLeMFeK.vsVQ4ciHFQyOkJbDdb2V8Qj4QaKg/aZLjKiAHKmR03W', '$2y$10$WPpLeMFeK.vsVQ4ciHFQyOkJbDdb2V8Qj4QaKg/aZLjKiAHKmR03W');
