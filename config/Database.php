@@ -7,7 +7,11 @@
 define('DB_HOST', getenv('DB_HOST') ?: 'db.fr-roub1.bengt.wasmernet.com');
 define('DB_PORT', getenv('DB_PORT') ?: 20184);
 define('DB_USER', getenv('DB_USER') ?: 'user_78e7febe');
-define('DB_PASS', getenv('DB_PASS') ?: 'pw_0JwxdIy7a64G0CEFQ0wxq4pcI6Yo1VE3');
+$envPassword = getenv('DB_PASS');
+if ($envPassword === false) {
+    $envPassword = getenv('DB_PASSWORD');
+}
+define('DB_PASS', $envPassword !== false ? $envPassword : 'pw_0JwxdIy7a64G0CEFQ0wxq4pcI6Yo1VE3');
 define('DB_NAME', getenv('DB_NAME') ?: 'ecommerce_app1');
 define('DB_CHARSET', getenv('DB_CHARSET') ?: 'utf8mb4');
 
