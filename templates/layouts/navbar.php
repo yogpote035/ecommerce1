@@ -5,7 +5,7 @@ $isAdmin = !empty($_SESSION['admin_logged_in']);
 $isCustomer = !empty($_SESSION['customer_logged_in']);
 $isRetailer = false;
 $isLoggedIn = $isAdmin || $isCustomer;
-$currentPage = basename($_SERVER['PHP_SELF']);
+$navbarCurrentPage = basename($_SERVER['PHP_SELF']);
 $categoryHelperForNav = new CategoryHelper($conn);
 $navCategories = array_slice($categoryHelperForNav->getCategoriesHierarchy(), 0, 8);
 
@@ -112,7 +112,7 @@ if ($customerId > 0) {
         <?php endif; ?>
         <?php foreach ($navItems as $item): ?>
           <li class="nav-item">
-            <a class="nav-link<?php echo $currentPage === basename($item['href']) ? ' active' : ''; ?>" href="<?php echo htmlspecialchars(app_url($item['href'])); ?>"><?php echo htmlspecialchars($item['label']); ?></a>
+            <a class="nav-link<?php echo $navbarCurrentPage === basename($item['href']) ? ' active' : ''; ?>" href="<?php echo htmlspecialchars(app_url($item['href'])); ?>"><?php echo htmlspecialchars($item['label']); ?></a>
           </li>
         <?php endforeach; ?>
         <?php if (!empty($moreNavItems)): ?>
