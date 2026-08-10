@@ -84,26 +84,28 @@ if ($customerId > 0) {
           <a class="nav-link dropdown-toggle" href="<?php echo htmlspecialchars(app_url('category.php')); ?>" id="categoryMegaMenu" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Categories</a>
           <div class="dropdown-menu dropdown-menu-right category-mega-dropdown p-3" aria-labelledby="categoryMegaMenu">
             <div class="row">
-              <?php foreach ($navCategories as $navCategory): ?>
-                <div class="col-md-6 col-lg-4 mb-3">
-                  <a class="font-weight-bold d-block mb-2" href="<?php echo htmlspecialchars(app_url('category.php?slug=' . urlencode($navCategory['slug'] ?? ''))); ?>">
-                    <?php echo htmlspecialchars($navCategory['name'] ?? 'Category'); ?>
-                  </a>
-                  <?php foreach (array_slice($navCategory['subcategories'] ?? [], 0, 5) as $navSubcategory): ?>
-                    <a class="dropdown-item px-0 py-1 small" href="<?php echo htmlspecialchars(app_url('subcategory.php?slug=' . urlencode($navSubcategory['slug'] ?? ''))); ?>">
-                      <?php echo htmlspecialchars($navSubcategory['name'] ?? 'Subcategory'); ?>
+              <?php if (!empty($navCategories)): ?>
+                <?php foreach ($navCategories as $navCategory): ?>
+                  <div class="col-md-6 col-lg-4 mb-3">
+                    <a class="font-weight-bold d-block mb-2" href="<?php echo htmlspecialchars(app_url('category.php?slug=' . urlencode($navCategory['slug'] ?? ''))); ?>">
+                      <?php echo htmlspecialchars($navCategory['name'] ?? 'Category'); ?>
                     </a>
-                    <?php
-                      $children = !empty($navSubcategory['id']) ? array_slice($categoryHelperForNav->getChildCategories((int) $navSubcategory['id']), 0, 3) : [];
-                    ?>
-                    <?php if (!empty($children)): ?>
-                      <div class="small text-secondary pl-2 mb-1">
-                        <?php echo htmlspecialchars(implode(' · ', array_column($children, 'name'))); ?>
-                      </div>
+                    <?php if (!empty($navCategory['subcategories'])): ?>
+                      <?php foreach (array_slice($navCategory['subcategories'], 0, 5) as $navSubcategory): ?>
+                        <a class="dropdown-item px-0 py-1 small" href="<?php echo htmlspecialchars(app_url('subcategory.php?slug=' . urlencode($navSubcategory['slug'] ?? ''))); ?>">
+                          <?php echo htmlspecialchars($navSubcategory['name'] ?? 'Subcategory'); ?>
+                        </a>
+                      <?php endforeach; ?>
+                    <?php else: ?>
+                      <div class="dropdown-item px-0 py-1 small text-muted">No subcategories available.</div>
                     <?php endif; ?>
-                  <?php endforeach; ?>
+                  </div>
+                <?php endforeach; ?>
+              <?php else: ?>
+                <div class="col-12">
+                  <div class="text-muted px-3 py-3">Categories not available.</div>
                 </div>
-              <?php endforeach; ?>
+              <?php endif; ?>
             </div>
           </div>
         </li>

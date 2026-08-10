@@ -154,22 +154,26 @@ include 'templates/header.php';
         <h4 class="h5">Categories</h4>
         <div class="list-group list-group-flush mt-3">
           <a href="index.php" class="list-group-item list-group-item-action<?php echo $categorySlug === '' ? ' active' : ''; ?>">All Products</a>
-          <?php foreach ($categories as $cat): ?>
-            <div class="mb-2">
-              <a href="index.php?category=<?php echo urlencode($cat['slug']); ?>" class="list-group-item list-group-item-action<?php echo $categorySlug === $cat['slug'] ? ' active' : ''; ?>">
-                <?php echo htmlspecialchars($cat['name']); ?>
-              </a>
-              <?php if (!empty($cat['subcategories'])): ?>
-                <div class="list-group list-group-flush ml-3">
-                  <?php foreach ($cat['subcategories'] as $sub): ?>
-                    <a href="index.php?category=<?php echo urlencode($cat['slug']); ?>&subcategory=<?php echo urlencode($sub['slug']); ?>" class="list-group-item list-group-item-action small<?php echo $subcategorySlug === $sub['slug'] ? ' active' : ''; ?>">
-                      <?php echo htmlspecialchars($sub['name']); ?>
-                    </a>
-                  <?php endforeach; ?>
-                </div>
-              <?php endif; ?>
-            </div>
-          <?php endforeach; ?>
+          <?php if (!empty($categories)): ?>
+            <?php foreach ($categories as $cat): ?>
+              <div class="mb-2">
+                <a href="index.php?category=<?php echo urlencode($cat['slug']); ?>" class="list-group-item list-group-item-action<?php echo $categorySlug === $cat['slug'] ? ' active' : ''; ?>">
+                  <?php echo htmlspecialchars($cat['name']); ?>
+                </a>
+                <?php if (!empty($cat['subcategories'])): ?>
+                  <div class="list-group list-group-flush ml-3">
+                    <?php foreach ($cat['subcategories'] as $sub): ?>
+                      <a href="index.php?category=<?php echo urlencode($cat['slug']); ?>&subcategory=<?php echo urlencode($sub['slug']); ?>" class="list-group-item list-group-item-action small<?php echo $subcategorySlug === $sub['slug'] ? ' active' : ''; ?>">
+                        <?php echo htmlspecialchars($sub['name']); ?>
+                      </a>
+                    <?php endforeach; ?>
+                  </div>
+                <?php endif; ?>
+              </div>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <div class="list-group-item text-muted">Categories not available.</div>
+          <?php endif; ?>
         </div>
       </div>
     </div>

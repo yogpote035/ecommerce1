@@ -64,9 +64,13 @@ include 'templates/header.php';
         <h4 class="h5">Categories</h4>
         <div class="list-group list-group-flush mt-3">
           <a href="search.php?q=<?php echo urlencode($q); ?>" class="list-group-item list-group-item-action<?php echo $category === '' ? ' active' : ''; ?>">All</a>
-          <?php foreach ($categories as $cat): ?>
-            <a href="search.php?q=<?php echo urlencode($q); ?>&category=<?php echo urlencode($cat); ?>" class="list-group-item list-group-item-action<?php echo $category === $cat ? ' active' : ''; ?>"><?php echo htmlspecialchars($cat); ?></a>
-          <?php endforeach; ?>
+          <?php if (!empty($categories)): ?>
+            <?php foreach ($categories as $cat): ?>
+              <a href="search.php?q=<?php echo urlencode($q); ?>&category=<?php echo urlencode($cat); ?>" class="list-group-item list-group-item-action<?php echo $category === $cat ? ' active' : ''; ?>"><?php echo htmlspecialchars($cat); ?></a>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <div class="list-group-item text-muted">Categories not available.</div>
+          <?php endif; ?>
         </div>
       </div>
     </div>

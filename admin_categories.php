@@ -96,6 +96,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($table && $id > 0) {
             mysqli_query($conn, "UPDATE $table SET is_active = IF(is_active = 1, 0, 1) WHERE id = $id");
         }
+    } elseif ($action === 'delete') {
+        $table = in_array($_POST['table'] ?? '', ['categories', 'sub_categories', 'child_categories'], true) ? $_POST['table'] : '';
+        $id = (int) ($_POST['id'] ?? 0);
+        if ($table && $id > 0) {
+            if ($table === 'categories') {
+                mysqli_query($conn, "DELETE FROM child_categories WHERE sub_category_id IN (SELECT id FROM sub_categories WHERE category_id = $id)");
+                mysqli_query($conn, "DELETE FROM sub_categories WHERE category_id = $id");
+                mysqli_query($conn, "DELETE FROM categories WHERE id = $id");
+            } elseif ($table === 'sub_categories') {
+                mysqli_query($conn, "DELETE FROM child_categories WHERE sub_category_id = $id");
+                mysqli_query($conn, "DELETE FROM sub_categories WHERE id = $id");
+            } elseif ($table === 'child_categories') {
+                mysqli_query($conn, "DELETE FROM child_categories WHERE id = $id");
+            }
+            $_SESSION['toast'] = ['type' => 'success', 'message' => 'Item deleted successfully.'];
+        }
     }
 
     header('Location: admin_categories.php');
@@ -198,7 +214,22 @@ include 'templates/header.php';
     <tbody>
       <?php while ($cat = mysqli_fetch_assoc($categories)): ?>
         <tr><td><?php echo htmlspecialchars($cat['name']); ?></td><td><?php echo htmlspecialchars($cat['slug']); ?></td><td><?php echo $cat['is_active'] ? 'Active' : 'Hidden'; ?></td><td>
-          <form method="post"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>"><input type="hidden" name="action" value="toggle"><input type="hidden" name="table" value="categories"><input type="hidden" name="id" value="<?php echo (int) $cat['id']; ?>"><button class="btn btn-sm btn-outline-secondary">Toggle</button></form>
+          <div class="d-flex gap-2 flex-wrap">
+            <form method="post" class="m-0">
+              <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
+              <input type="hidden" name="action" value="toggle">
+              <input type="hidden" name="table" value="categories">
+              <input type="hidden" name="id" value="<?php echo (int) $cat['id']; ?>">
+              <button class="btn btn-sm btn-outline-secondary">Toggle</button>
+            </form>
+            <form method="post" class="m-0">
+              <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
+              <input type="hidden" name="action" value="delete">
+              <input type="hidden" name="table" value="categories">
+              <input type="hidden" name="id" value="<?php echo (int) $cat['id']; ?>">
+              <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this category and all child categories?');">Delete</button>
+            </form>
+          </div>
         </td></tr>
       <?php endwhile; ?>
     </tbody>
@@ -211,7 +242,24 @@ include 'templates/header.php';
     <h2 class="h5">Subcategories</h2>
     <div class="table-responsive"><table class="table table-sm"><thead><tr><th>Category</th><th>Name</th><th>Status</th><th></th></tr></thead><tbody>
       <?php while ($sub = mysqli_fetch_assoc($subcategories)): ?>
-        <tr><td><?php echo htmlspecialchars($sub['category_name'] ?? ''); ?></td><td><?php echo htmlspecialchars($sub['name']); ?></td><td><?php echo $sub['is_active'] ? 'Active' : 'Hidden'; ?></td><td><form method="post"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>"><input type="hidden" name="action" value="toggle"><input type="hidden" name="table" value="sub_categories"><input type="hidden" name="id" value="<?php echo (int) $sub['id']; ?>"><button class="btn btn-sm btn-outline-secondary">Toggle</button></form></td></tr>
+        <tr><td><?php echo htmlspecialchars($sub['category_name'] ?? ''); ?></td><td><?php echo htmlspecialchars($sub['name']); ?></td><td><?php echo $sub['is_active'] ? 'Active' : 'Hidden'; ?></td><td>
+          <div class="d-flex gap-2 flex-wrap">
+            <form method="post" class="m-0">
+              <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
+              <input type="hidden" name="action" value="toggle">
+              <input type="hidden" name="table" value="sub_categories">
+              <input type="hidden" name="id" value="<?php echo (int) $sub['id']; ?>">
+              <button class="btn btn-sm btn-outline-secondary">Toggle</button>
+            </form>
+            <form method="post" class="m-0">
+              <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
+              <input type="hidden" name="action" value="delete">
+              <input type="hidden" name="table" value="sub_categories">
+              <input type="hidden" name="id" value="<?php echo (int) $sub['id']; ?>">
+              <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this subcategory and its child categories?');">Delete</button>
+            </form>
+          </div>
+        </td></tr>
       <?php endwhile; ?>
     </tbody></table></div>
     <?php PaginationHelper::render($subcategoryPage, $subcategoryPages, $subcategoryTotal, $itemsPerPage, 'subcategories', ['pageKey' => 'subcategory_page']); ?>
@@ -220,7 +268,24 @@ include 'templates/header.php';
     <h2 class="h5">Child Categories</h2>
     <div class="table-responsive"><table class="table table-sm"><thead><tr><th>Path</th><th>Name</th><th>Status</th><th></th></tr></thead><tbody>
       <?php while ($child = mysqli_fetch_assoc($children)): ?>
-        <tr><td><?php echo htmlspecialchars(($child['category_name'] ?? '') . ' / ' . ($child['sub_name'] ?? '')); ?></td><td><?php echo htmlspecialchars($child['name']); ?></td><td><?php echo $child['is_active'] ? 'Active' : 'Hidden'; ?></td><td><form method="post"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>"><input type="hidden" name="action" value="toggle"><input type="hidden" name="table" value="child_categories"><input type="hidden" name="id" value="<?php echo (int) $child['id']; ?>"><button class="btn btn-sm btn-outline-secondary">Toggle</button></form></td></tr>
+        <tr><td><?php echo htmlspecialchars(($child['category_name'] ?? '') . ' / ' . ($child['sub_name'] ?? '')); ?></td><td><?php echo htmlspecialchars($child['name']); ?></td><td><?php echo $child['is_active'] ? 'Active' : 'Hidden'; ?></td><td>
+          <div class="d-flex gap-2 flex-wrap">
+            <form method="post" class="m-0">
+              <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
+              <input type="hidden" name="action" value="toggle">
+              <input type="hidden" name="table" value="child_categories">
+              <input type="hidden" name="id" value="<?php echo (int) $child['id']; ?>">
+              <button class="btn btn-sm btn-outline-secondary">Toggle</button>
+            </form>
+            <form method="post" class="m-0">
+              <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
+              <input type="hidden" name="action" value="delete">
+              <input type="hidden" name="table" value="child_categories">
+              <input type="hidden" name="id" value="<?php echo (int) $child['id']; ?>">
+              <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this child category?');">Delete</button>
+            </form>
+          </div>
+        </td></tr>
       <?php endwhile; ?>
     </tbody></table></div>
     <?php PaginationHelper::render($childPage, $childPages, $childTotal, $itemsPerPage, 'child categories', ['pageKey' => 'child_page']); ?>

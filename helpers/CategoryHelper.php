@@ -216,7 +216,7 @@ class CategoryHelper {
 
     public function getCategoriesHierarchy() {
         if (!$this->hasSchema) {
-            return $this->fallbackCategories;
+            return [];
         }
 
         $sql = "
@@ -238,7 +238,7 @@ class CategoryHelper {
 
         $stmt = $this->db->prepare($sql);
         if (!$stmt || !mysqli_stmt_execute($stmt)) {
-            return $this->fallbackCategories;
+            return [];
         }
 
         $result = mysqli_stmt_get_result($stmt);
@@ -268,36 +268,11 @@ class CategoryHelper {
         }
 
         mysqli_stmt_close($stmt);
-        return $this->mergeFallbackCategories(array_values($categories));
+        return array_values($categories);
     }
 
     private function mergeFallbackCategories(array $dbCategories) {
-        $categoryMap = [];
-        foreach ($dbCategories as $category) {
-            $categoryMap[$category['slug']] = $category;
-        }
-
-        foreach ($this->fallbackCategories as $fallbackCategory) {
-            if (!isset($categoryMap[$fallbackCategory['slug']])) {
-                $categoryMap[$fallbackCategory['slug']] = $fallbackCategory;
-                continue;
-            }
-
-            $existingCategory = &$categoryMap[$fallbackCategory['slug']];
-            $existingSubcategories = [];
-            foreach ($existingCategory['subcategories'] as $subcategory) {
-                $existingSubcategories[$subcategory['slug']] = true;
-            }
-
-            foreach ($fallbackCategory['subcategories'] as $fallbackSubcategory) {
-                if (!isset($existingSubcategories[$fallbackSubcategory['slug']])) {
-                    $existingCategory['subcategories'][] = $fallbackSubcategory;
-                }
-            }
-            unset($existingCategory);
-        }
-
-        $merged = array_values($categoryMap);
+        $merged = array_values($dbCategories);
         usort($merged, function ($a, $b) {
             return strcasecmp($a['name'], $b['name']);
         });
@@ -316,12 +291,12 @@ class CategoryHelper {
 
     public function getCategoryBySlug($slug) {
         if (!$this->hasSchema || $slug === '') {
-            return $this->findCategoryBySlug($slug);
+            return null;
         }
 
         $stmt = $this->db->prepare('SELECT id, name, slug, description, icon, image FROM categories WHERE slug = ? AND is_active = 1 LIMIT 1');
         if (!$stmt) {
-            return $this->findCategoryBySlug($slug);
+            return null;
         }
 
         mysqli_stmt_bind_param($stmt, 's', $slug);
@@ -329,23 +304,19 @@ class CategoryHelper {
         $result = mysqli_stmt_get_result($stmt);
         $category = mysqli_fetch_assoc($result) ?: null;
         mysqli_stmt_close($stmt);
-        return $category ?: $this->findCategoryBySlug($slug);
+        return $category;
     }
 
     public function getSubcategoryBySlug($slug) {
-        if ($slug === '') {
+        if ($slug === '' || !$this->hasSchema) {
             return null;
-        }
-
-        if (!$this->hasSchema) {
-            return $this->findSubcategoryBySlug($slug);
         }
 
         $stmt = $this->db->prepare(
             'SELECT s.id, s.name, s.slug, s.description, s.category_id, c.name AS category_name, c.slug AS category_slug FROM sub_categories s INNER JOIN categories c ON c.id = s.category_id WHERE s.slug = ? AND s.is_active = 1 AND c.is_active = 1 ORDER BY c.name ASC, s.name ASC LIMIT 1'
         );
         if (!$stmt) {
-            return $this->findSubcategoryBySlug($slug);
+            return null;
         }
 
         mysqli_stmt_bind_param($stmt, 's', $slug);
@@ -353,7 +324,7 @@ class CategoryHelper {
         $result = mysqli_stmt_get_result($stmt);
         $subcategory = mysqli_fetch_assoc($result) ?: null;
         mysqli_stmt_close($stmt);
-        return $subcategory ?: $this->findSubcategoryBySlug($slug);
+        return $subcategory;
     }
 
     public function getChildCategories($subcategoryId) {
