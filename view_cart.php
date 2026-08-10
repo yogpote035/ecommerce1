@@ -74,7 +74,7 @@ include 'templates/header.php';
                       <td><?php echo htmlspecialchars($item['name']); ?></td>
                       <td>₹<?php echo number_format($item['price'], 2); ?></td>
                       <td>
-                        <input type="number" class="form-control form-control-sm w-25" value="<?php echo $item['qty']; ?>" name="qty[<?php echo $item['id']; ?>]" min="1">
+                        <input type="number" class="form-control form-control-sm cart-quantity-input" value="<?php echo $item['qty']; ?>" name="qty[<?php echo $item['id']; ?>]" min="1">
                       </td>
                       <td>₹<?php echo number_format($item['line_total'], 2); ?></td>
                     </tr>
