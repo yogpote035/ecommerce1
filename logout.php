@@ -1,5 +1,14 @@
 <?php
 require_once 'init.php';
+$userId = null;
+$userType = null;
+if (!empty($_SESSION['admin_logged_in']) && !empty($_SESSION['admin_id'])) {
+    $userId = (int) $_SESSION['admin_id'];
+    $userType = 'admin';
+} elseif (!empty($_SESSION['customer_logged_in']) && !empty($_SESSION['customer_id'])) {
+    $userId = (int) $_SESSION['customer_id'];
+    $userType = 'customer';
+}
 if (!empty($_COOKIE['remember_login'])) {
     $parts = explode(':', $_COOKIE['remember_login'], 2);
     if (!empty($parts[0])) {
@@ -12,6 +21,9 @@ if (!empty($_COOKIE['remember_login'])) {
         }
     }
     setcookie('remember_login', '', time() - 3600, '/', '', false, true);
+}
+if ($userType !== null) {
+    SecurityHelper::logActivity($conn, 'logout', 'auth', $userId, $userId, $userType);
 }
 SecurityHelper::destroySession();
 header('Location: Home.php');

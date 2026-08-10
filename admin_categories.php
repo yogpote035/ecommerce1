@@ -70,7 +70,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = mysqli_prepare($conn, 'INSERT INTO categories (name, slug, icon, description) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE icon = VALUES(icon), description = VALUES(description), is_active = 1');
         mysqli_stmt_bind_param($stmt, 'ssss', $name, $slug, $icon, $description);
         mysqli_stmt_execute($stmt);
+        $categoryId = mysqli_insert_id($conn);
         mysqli_stmt_close($stmt);
+        SecurityHelper::logActivity($conn, 'create', 'category', $categoryId, $_SESSION['admin_id'] ?? null, 'admin');
         $_SESSION['toast'] = ['type' => 'success', 'message' => 'Category saved.'];
     } elseif ($action === 'add_subcategory') {
         $categoryId = (int) ($_POST['category_id'] ?? 0);
@@ -79,7 +81,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = mysqli_prepare($conn, 'INSERT INTO sub_categories (category_id, name, slug) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name), is_active = 1');
         mysqli_stmt_bind_param($stmt, 'iss', $categoryId, $name, $slug);
         mysqli_stmt_execute($stmt);
+        $subcategoryId = mysqli_insert_id($conn);
         mysqli_stmt_close($stmt);
+        SecurityHelper::logActivity($conn, 'create', 'subcategory', $subcategoryId, $_SESSION['admin_id'] ?? null, 'admin');
         $_SESSION['toast'] = ['type' => 'success', 'message' => 'Subcategory saved.'];
     } elseif ($action === 'add_child') {
         $subId = (int) ($_POST['sub_category_id'] ?? 0);
@@ -88,13 +92,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = mysqli_prepare($conn, 'INSERT INTO child_categories (sub_category_id, name, slug) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name), is_active = 1');
         mysqli_stmt_bind_param($stmt, 'iss', $subId, $name, $slug);
         mysqli_stmt_execute($stmt);
+        $childId = mysqli_insert_id($conn);
         mysqli_stmt_close($stmt);
+        SecurityHelper::logActivity($conn, 'create', 'child_category', $childId, $_SESSION['admin_id'] ?? null, 'admin');
         $_SESSION['toast'] = ['type' => 'success', 'message' => 'Child category saved.'];
     } elseif ($action === 'toggle') {
         $table = in_array($_POST['table'] ?? '', ['categories', 'sub_categories', 'child_categories'], true) ? $_POST['table'] : '';
         $id = (int) ($_POST['id'] ?? 0);
         if ($table && $id > 0) {
             mysqli_query($conn, "UPDATE $table SET is_active = IF(is_active = 1, 0, 1) WHERE id = $id");
+            $entityType = $table === 'categories' ? 'category' : ($table === 'sub_categories' ? 'subcategory' : 'child_category');
+            SecurityHelper::logActivity($conn, 'update', $entityType, $id, $_SESSION['admin_id'] ?? null, 'admin');
         }
     } elseif ($action === 'delete') {
         $table = in_array($_POST['table'] ?? '', ['categories', 'sub_categories', 'child_categories'], true) ? $_POST['table'] : '';
@@ -104,11 +112,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 mysqli_query($conn, "DELETE FROM child_categories WHERE sub_category_id IN (SELECT id FROM sub_categories WHERE category_id = $id)");
                 mysqli_query($conn, "DELETE FROM sub_categories WHERE category_id = $id");
                 mysqli_query($conn, "DELETE FROM categories WHERE id = $id");
+                SecurityHelper::logActivity($conn, 'delete', 'category', $id, $_SESSION['admin_id'] ?? null, 'admin');
             } elseif ($table === 'sub_categories') {
                 mysqli_query($conn, "DELETE FROM child_categories WHERE sub_category_id = $id");
                 mysqli_query($conn, "DELETE FROM sub_categories WHERE id = $id");
+                SecurityHelper::logActivity($conn, 'delete', 'subcategory', $id, $_SESSION['admin_id'] ?? null, 'admin');
             } elseif ($table === 'child_categories') {
                 mysqli_query($conn, "DELETE FROM child_categories WHERE id = $id");
+                SecurityHelper::logActivity($conn, 'delete', 'child_category', $id, $_SESSION['admin_id'] ?? null, 'admin');
             }
             $_SESSION['toast'] = ['type' => 'success', 'message' => 'Item deleted successfully.'];
         }

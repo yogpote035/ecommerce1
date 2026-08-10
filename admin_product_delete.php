@@ -32,6 +32,7 @@ $deleteStmt = mysqli_prepare($conn, "DELETE FROM apadd WHERE Apid = ?");
 mysqli_stmt_bind_param($deleteStmt, 'i', $productId);
 
 if (mysqli_stmt_execute($deleteStmt)) {
+    SecurityHelper::logActivity($conn, 'delete', 'product', $productId, $_SESSION['admin_id'] ?? null, 'admin');
     $_SESSION['toast'] = ['type' => 'success', 'message' => 'Product deleted successfully.'];
 } else {
     $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Error deleting product.'];

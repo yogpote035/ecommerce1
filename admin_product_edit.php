@@ -94,6 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     mysqli_stmt_bind_param($updateStmt, 'sssidsi', $apname, $apbrand, $apcategory, $apqty, $apprice, $apdescription, $productId);
     
     if (mysqli_stmt_execute($updateStmt)) {
+        SecurityHelper::logActivity($conn, 'update', 'product', $productId, $_SESSION['admin_id'] ?? null, 'admin');
         $uploadedPaths = [];
         if (!empty($_FILES['apimage']['name']) && is_array($_FILES['apimage']['name'])) {
             $imageHelper = new ProductImageHelper($conn);

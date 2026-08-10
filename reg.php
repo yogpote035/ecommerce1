@@ -36,9 +36,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     mysqli_stmt_bind_param($stmt, 'sssss', $Cname, $Cemail, $Cadd, $Ccontact, $hashedPassword);
 
     if (mysqli_stmt_execute($stmt)) {
-        $_SESSION['customer_id'] = mysqli_insert_id($conn);
+        $newCustomerId = mysqli_insert_id($conn);
+        $_SESSION['customer_id'] = $newCustomerId;
         $_SESSION['customer_email'] = $Cemail;
         $_SESSION['customer_logged_in'] = true;
+        SecurityHelper::logActivity($conn, 'create', 'customer', $newCustomerId, $newCustomerId, 'customer');
         $_SESSION['toast'] = ['type' => 'success', 'message' => 'Customer account created successfully.'];
         header('Location: index.php?page=1');
         exit();

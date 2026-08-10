@@ -122,6 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($primaryUpdated && $productUpdated) {
                 mysqli_commit($conn);
+                SecurityHelper::logActivity($conn, 'update', 'product_image', $imageId, $_SESSION['admin_id'] ?? null, 'admin');
                 $_SESSION['toast'] = ['type' => 'success', 'message' => 'Primary image updated.'];
             } else {
                 mysqli_rollback($conn);
@@ -134,7 +135,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $imageId = (int) ($_POST['image_id'] ?? 0);
         $stmt = mysqli_prepare($conn, 'DELETE FROM product_images WHERE id = ? AND product_id = ?');
         mysqli_stmt_bind_param($stmt, 'ii', $imageId, $productId);
-        mysqli_stmt_execute($stmt);
+        if (mysqli_stmt_execute($stmt)) {
+            SecurityHelper::logActivity($conn, 'delete', 'product_image', $imageId, $_SESSION['admin_id'] ?? null, 'admin');
+        }
         mysqli_stmt_close($stmt);
         $_SESSION['toast'] = ['type' => 'success', 'message' => 'Image metadata removed.'];
     }

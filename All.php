@@ -47,6 +47,8 @@ $stmt = mysqli_prepare($conn, "INSERT INTO aregister (aname, aadd, email, apass)
 mysqli_stmt_bind_param($stmt, 'ssss', $aname, $aadd, $email, $apassHash);
 
 if (mysqli_stmt_execute($stmt)) {
+    $newAdminId = mysqli_insert_id($conn);
+    SecurityHelper::logActivity($conn, 'create', 'admin', $newAdminId, $newAdminId, 'admin');
     $_SESSION['toast'] = ['type' => 'success', 'message' => 'Admin account created successfully. Please login.'];
     header('Location: auth.php?role=admin&mode=login');
     exit();
