@@ -143,25 +143,7 @@ INSERT INTO `categories` (`id`, `name`, `slug`, `icon`, `description`, `image`, 
 INSERT INTO `categories` (`id`, `name`, `slug`, `icon`, `description`, `image`, `is_active`, `created_at`, `updated_at`) VALUES ('5', 'Footwear', 'footwear', '­ƒæƒ', 'Shoes, sneakers, and sandals', NULL, '1', '2026-06-29 12:59:39', '2026-06-29 12:59:39');
 
 DROP TABLE IF EXISTS `child_categories`;
-CREATE TABLE `child_categories` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `sub_category_id` int NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `slug` varchar(100) NOT NULL,
-  `description` text,
-  `is_active` tinyint(1) DEFAULT '1',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `sub_category_id` (`sub_category_id`,`slug`),
-  KEY `is_active` (`is_active`),
-  CONSTRAINT `child_categories_ibfk_1` FOREIGN KEY (`sub_category_id`) REFERENCES `sub_categories` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-INSERT INTO `child_categories` (`id`, `sub_category_id`, `name`, `slug`, `description`, `is_active`, `created_at`, `updated_at`) VALUES ('1', '1', 'Topwear', 'topwear', NULL, '1', '2026-06-29 12:59:39', '2026-06-29 12:59:39');
-INSERT INTO `child_categories` (`id`, `sub_category_id`, `name`, `slug`, `description`, `is_active`, `created_at`, `updated_at`) VALUES ('2', '1', 'Bottomwear', 'bottomwear', NULL, '1', '2026-06-29 12:59:39', '2026-06-29 12:59:39');
-INSERT INTO `child_categories` (`id`, `sub_category_id`, `name`, `slug`, `description`, `is_active`, `created_at`, `updated_at`) VALUES ('3', '1', 'Footwear', 'footwear', NULL, '1', '2026-06-29 12:59:39', '2026-06-29 12:59:39');
-INSERT INTO `child_categories` (`id`, `sub_category_id`, `name`, `slug`, `description`, `is_active`, `created_at`, `updated_at`) VALUES ('4', '1', 'Accessories', 'accessories', NULL, '1', '2026-06-29 12:59:39', '2026-06-29 12:59:39');
+-- child_categories removed; table schema and seed data dropped
 
 DROP TABLE IF EXISTS `cregister`;
 CREATE TABLE `cregister` (

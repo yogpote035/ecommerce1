@@ -91,7 +91,6 @@ $modernTables = [
     'password_resets',
     'categories',
     'sub_categories',
-    'child_categories',
     'product_images',
 ];
 

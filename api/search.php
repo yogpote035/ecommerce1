@@ -39,7 +39,6 @@ function findCategoryUrlByName($conn, $name) {
     $sources = [
         ['table' => 'categories', 'target' => 'category.php'],
         ['table' => 'sub_categories', 'target' => 'subcategory.php'],
-        ['table' => 'child_categories', 'target' => 'subcategory.php'],
     ];
 
     foreach ($sources as $source) {

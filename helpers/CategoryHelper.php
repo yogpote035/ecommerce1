@@ -328,21 +328,8 @@ class CategoryHelper {
     }
 
     public function getChildCategories($subcategoryId) {
-        if (!$this->hasSchema || empty($subcategoryId)) {
-            return [];
-        }
-
-        $stmt = $this->db->prepare('SELECT id, name, slug FROM child_categories WHERE sub_category_id = ? AND is_active = 1 ORDER BY name ASC');
-        if (!$stmt) {
-            return [];
-        }
-
-        mysqli_stmt_bind_param($stmt, 'i', $subcategoryId);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $children = mysqli_fetch_all($result, MYSQLI_ASSOC);
-        mysqli_stmt_close($stmt);
-        return $children;
+        // child categories removed; return empty list for compatibility
+        return [];
     }
 
     public function getProductsByCategory($categoryId = null, $subId = null, $childId = null) {

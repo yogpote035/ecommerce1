@@ -33,17 +33,7 @@ function ensureCategoryTables($conn) {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         UNIQUE KEY unique_category_slug (category_id, slug)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-    mysqli_query($conn, "CREATE TABLE IF NOT EXISTS child_categories (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        sub_category_id INT NOT NULL,
-        name VARCHAR(100) NOT NULL,
-        slug VARCHAR(100) NOT NULL,
-        description TEXT,
-        is_active TINYINT(1) DEFAULT 1,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        UNIQUE KEY unique_sub_slug (sub_category_id, slug)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    // child_categories removed: functionality deprecated
 }
 
 function categorySlug($value) {
@@ -85,19 +75,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mysqli_stmt_close($stmt);
         SecurityHelper::logActivity($conn, 'create', 'subcategory', $subcategoryId, $_SESSION['admin_id'] ?? null, 'admin');
         $_SESSION['toast'] = ['type' => 'success', 'message' => 'Subcategory saved.'];
-    } elseif ($action === 'add_child') {
-        $subId = (int) ($_POST['sub_category_id'] ?? 0);
-        $name = trim($_POST['name'] ?? '');
-        $slug = categorySlug($_POST['slug'] ?? $name);
-        $stmt = mysqli_prepare($conn, 'INSERT INTO child_categories (sub_category_id, name, slug) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE name = VALUES(name), is_active = 1');
-        mysqli_stmt_bind_param($stmt, 'iss', $subId, $name, $slug);
-        mysqli_stmt_execute($stmt);
-        $childId = mysqli_insert_id($conn);
-        mysqli_stmt_close($stmt);
-        SecurityHelper::logActivity($conn, 'create', 'child_category', $childId, $_SESSION['admin_id'] ?? null, 'admin');
-        $_SESSION['toast'] = ['type' => 'success', 'message' => 'Child category saved.'];
     } elseif ($action === 'toggle') {
-        $table = in_array($_POST['table'] ?? '', ['categories', 'sub_categories', 'child_categories'], true) ? $_POST['table'] : '';
+      $table = in_array($_POST['table'] ?? '', ['categories', 'sub_categories'], true) ? $_POST['table'] : '';
         $id = (int) ($_POST['id'] ?? 0);
         if ($table && $id > 0) {
             mysqli_query($conn, "UPDATE $table SET is_active = IF(is_active = 1, 0, 1) WHERE id = $id");
@@ -105,21 +84,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             SecurityHelper::logActivity($conn, 'update', $entityType, $id, $_SESSION['admin_id'] ?? null, 'admin');
         }
     } elseif ($action === 'delete') {
-        $table = in_array($_POST['table'] ?? '', ['categories', 'sub_categories', 'child_categories'], true) ? $_POST['table'] : '';
+        $table = in_array($_POST['table'] ?? '', ['categories', 'sub_categories'], true) ? $_POST['table'] : '';
         $id = (int) ($_POST['id'] ?? 0);
         if ($table && $id > 0) {
             if ($table === 'categories') {
-                mysqli_query($conn, "DELETE FROM child_categories WHERE sub_category_id IN (SELECT id FROM sub_categories WHERE category_id = $id)");
-                mysqli_query($conn, "DELETE FROM sub_categories WHERE category_id = $id");
-                mysqli_query($conn, "DELETE FROM categories WHERE id = $id");
-                SecurityHelper::logActivity($conn, 'delete', 'category', $id, $_SESSION['admin_id'] ?? null, 'admin');
+              mysqli_query($conn, "DELETE FROM sub_categories WHERE category_id = $id");
+              mysqli_query($conn, "DELETE FROM categories WHERE id = $id");
+              SecurityHelper::logActivity($conn, 'delete', 'category', $id, $_SESSION['admin_id'] ?? null, 'admin');
             } elseif ($table === 'sub_categories') {
-                mysqli_query($conn, "DELETE FROM child_categories WHERE sub_category_id = $id");
-                mysqli_query($conn, "DELETE FROM sub_categories WHERE id = $id");
-                SecurityHelper::logActivity($conn, 'delete', 'subcategory', $id, $_SESSION['admin_id'] ?? null, 'admin');
-            } elseif ($table === 'child_categories') {
-                mysqli_query($conn, "DELETE FROM child_categories WHERE id = $id");
-                SecurityHelper::logActivity($conn, 'delete', 'child_category', $id, $_SESSION['admin_id'] ?? null, 'admin');
+              mysqli_query($conn, "DELETE FROM sub_categories WHERE id = $id");
+              SecurityHelper::logActivity($conn, 'delete', 'subcategory', $id, $_SESSION['admin_id'] ?? null, 'admin');
             }
             $_SESSION['toast'] = ['type' => 'success', 'message' => 'Item deleted successfully.'];
         }
@@ -138,21 +112,16 @@ $subcategoryOffset = PaginationHelper::offset($subcategoryPage, $itemsPerPage);
 $childOffset = PaginationHelper::offset($childPage, $itemsPerPage);
 $categoryTotal = (int)(mysqli_fetch_assoc(mysqli_query($conn, 'SELECT COUNT(*) AS total FROM categories'))['total'] ?? 0);
 $subcategoryTotal = (int)(mysqli_fetch_assoc(mysqli_query($conn, 'SELECT COUNT(*) AS total FROM sub_categories'))['total'] ?? 0);
-$childTotal = (int)(mysqli_fetch_assoc(mysqli_query($conn, 'SELECT COUNT(*) AS total FROM child_categories'))['total'] ?? 0);
 $categoryPages = PaginationHelper::totalPages($categoryTotal, $itemsPerPage);
 $subcategoryPages = PaginationHelper::totalPages($subcategoryTotal, $itemsPerPage);
-$childPages = PaginationHelper::totalPages($childTotal, $itemsPerPage);
 $categoryPage = min($categoryPage, $categoryPages);
 $subcategoryPage = min($subcategoryPage, $subcategoryPages);
-$childPage = min($childPage, $childPages);
 $categoryOffset = PaginationHelper::offset($categoryPage, $itemsPerPage);
 $subcategoryOffset = PaginationHelper::offset($subcategoryPage, $itemsPerPage);
-$childOffset = PaginationHelper::offset($childPage, $itemsPerPage);
 
 $categoryOptions = mysqli_query($conn, 'SELECT * FROM categories ORDER BY name ASC');
 $categories = mysqli_query($conn, "SELECT * FROM categories ORDER BY name ASC LIMIT $itemsPerPage OFFSET $categoryOffset");
 $subcategories = mysqli_query($conn, "SELECT s.*, c.name AS category_name FROM sub_categories s LEFT JOIN categories c ON c.id = s.category_id ORDER BY c.name ASC, s.name ASC LIMIT $itemsPerPage OFFSET $subcategoryOffset");
-$children = mysqli_query($conn, "SELECT ch.*, s.name AS sub_name, c.name AS category_name FROM child_categories ch LEFT JOIN sub_categories s ON s.id = ch.sub_category_id LEFT JOIN categories c ON c.id = s.category_id ORDER BY c.name ASC, s.name ASC, ch.name ASC LIMIT $itemsPerPage OFFSET $childOffset");
 $subOptions = mysqli_query($conn, 'SELECT id, name FROM sub_categories ORDER BY name ASC');
 
 include 'templates/header.php';
@@ -198,24 +167,7 @@ include 'templates/header.php';
       </form>
     </div></div>
   </div>
-  <div class="col-lg-4 mb-4">
-    <div class="card sidebar-card shadow-sm h-100"><div class="card-body">
-      <h2 class="h6">Add Child Category</h2>
-      <form method="post">
-        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
-        <input type="hidden" name="action" value="add_child">
-        <select class="form-control mb-2" name="sub_category_id" required>
-          <option value="">Choose subcategory</option>
-          <?php while ($sub = mysqli_fetch_assoc($subOptions)): ?>
-            <option value="<?php echo (int) $sub['id']; ?>"><?php echo htmlspecialchars($sub['name']); ?></option>
-          <?php endwhile; ?>
-        </select>
-        <input class="form-control mb-2" name="name" placeholder="Child category name" required>
-        <input class="form-control mb-3" name="slug" placeholder="Slug">
-        <button class="btn btn-primary w-100">Save child category</button>
-      </form>
-    </div></div>
-  </div>
+  <!-- Child categories removed -->
 </div>
 
 <div class="card sidebar-card shadow-sm mb-4"><div class="card-body">
@@ -238,7 +190,7 @@ include 'templates/header.php';
               <input type="hidden" name="action" value="delete">
               <input type="hidden" name="table" value="categories">
               <input type="hidden" name="id" value="<?php echo (int) $cat['id']; ?>">
-              <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this category and all child categories?');">Delete</button>
+              <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this category and all subcategories?');">Delete</button>
             </form>
           </div>
         </td></tr>
@@ -267,7 +219,7 @@ include 'templates/header.php';
               <input type="hidden" name="action" value="delete">
               <input type="hidden" name="table" value="sub_categories">
               <input type="hidden" name="id" value="<?php echo (int) $sub['id']; ?>">
-              <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this subcategory and its child categories?');">Delete</button>
+              <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this subcategory?');">Delete</button>
             </form>
           </div>
         </td></tr>
@@ -275,32 +227,7 @@ include 'templates/header.php';
     </tbody></table></div>
     <?php PaginationHelper::render($subcategoryPage, $subcategoryPages, $subcategoryTotal, $itemsPerPage, 'subcategories', ['pageKey' => 'subcategory_page']); ?>
   </div></div></div>
-  <div class="col-lg-6 mb-4"><div class="card sidebar-card shadow-sm"><div class="card-body">
-    <h2 class="h5">Child Categories</h2>
-    <div class="table-responsive"><table class="table table-sm"><thead><tr><th>Path</th><th>Name</th><th>Status</th><th></th></tr></thead><tbody>
-      <?php while ($child = mysqli_fetch_assoc($children)): ?>
-        <tr><td><?php echo htmlspecialchars(($child['category_name'] ?? '') . ' / ' . ($child['sub_name'] ?? '')); ?></td><td><?php echo htmlspecialchars($child['name']); ?></td><td><?php echo $child['is_active'] ? 'Active' : 'Hidden'; ?></td><td>
-          <div class="d-flex gap-2 flex-wrap">
-            <form method="post" class="m-0">
-              <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
-              <input type="hidden" name="action" value="toggle">
-              <input type="hidden" name="table" value="child_categories">
-              <input type="hidden" name="id" value="<?php echo (int) $child['id']; ?>">
-              <button class="btn btn-sm btn-outline-secondary">Toggle</button>
-            </form>
-            <form method="post" class="m-0">
-              <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
-              <input type="hidden" name="action" value="delete">
-              <input type="hidden" name="table" value="child_categories">
-              <input type="hidden" name="id" value="<?php echo (int) $child['id']; ?>">
-              <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this child category?');">Delete</button>
-            </form>
-          </div>
-        </td></tr>
-      <?php endwhile; ?>
-    </tbody></table></div>
-    <?php PaginationHelper::render($childPage, $childPages, $childTotal, $itemsPerPage, 'child categories', ['pageKey' => 'child_page']); ?>
-  </div></div></div>
+  <!-- Child categories listing removed -->
 </div>
 
 <?php include 'templates/footer.php'; ?>
