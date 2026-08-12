@@ -18,7 +18,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $stmt = mysqli_prepare($conn, "SELECT Cid, Cpass FROM cregister WHERE Cemail = ?");
-    mysqli_stmt_bind_param($stmt, 's', $email);
+    if (!$stmt) {
+        $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Database error while preparing customer login. Please try again.'];
+        header('Location: auth.php?role=customer&mode=login');
+        exit();
+    }
+
+    if (!mysqli_stmt_bind_param($stmt, 's', $email)) {
+        mysqli_stmt_close($stmt);
+        $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Database bind error while checking customer login. Please try again.'];
+        header('Location: auth.php?role=customer&mode=login');
+        exit();
+    }
+
     mysqli_stmt_execute($stmt);
     mysqli_stmt_bind_result($stmt, $cid, $storedHash);
 

@@ -20,7 +20,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $stmt = mysqli_prepare($conn, "SELECT aid, aname, apass FROM aregister WHERE email = ?");
-    mysqli_stmt_bind_param($stmt, 's', $email);
+    if (!$stmt) {
+        $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Database error while preparing admin login. Please try again.'];
+        header('Location: auth.php?role=admin&mode=login');
+        exit();
+    }
+
+    if (!mysqli_stmt_bind_param($stmt, 's', $email)) {
+        mysqli_stmt_close($stmt);
+        $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Database bind error while checking admin login. Please try again.'];
+        header('Location: auth.php?role=admin&mode=login');
+        exit();
+    }
+
     mysqli_stmt_execute($stmt);
     mysqli_stmt_bind_result($stmt, $aid, $aname, $storedPassword);
     if (mysqli_stmt_fetch($stmt)) {
