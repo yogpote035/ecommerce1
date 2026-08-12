@@ -12,8 +12,10 @@ $currentPage = PaginationHelper::currentPage();
 $offset = PaginationHelper::offset($currentPage, $itemsPerPage);
 $totalItems = 0;
 $totalPages = 1;
+$searchDurationMs = 0.0;
 
 if ($q !== '') {
+    $searchStartedAt = microtime(true);
     $query = '%' . strtolower($q) . '%';
     $sql = 'SELECT * FROM apadd WHERE (LOWER(apname) LIKE ? OR LOWER(apbrand) LIKE ? OR LOWER(apcategory) LIKE ?)';
     $countSql = 'SELECT COUNT(*) AS total FROM apadd WHERE (LOWER(apname) LIKE ? OR LOWER(apbrand) LIKE ? OR LOWER(apcategory) LIKE ?)';
@@ -52,6 +54,8 @@ if ($q !== '') {
         }
         mysqli_stmt_close($stmt);
     }
+
+    $searchDurationMs = round((microtime(true) - $searchStartedAt) * 1000, 2);
 }
 
 $siteTitle = 'Search Results';
@@ -80,7 +84,13 @@ include 'templates/header.php';
     <div class="d-flex justify-content-between align-items-center mb-4 flex-column flex-md-row">
       <div>
         <h2 class="h4 mb-1">Search results for "<?php echo htmlspecialchars($q); ?>"</h2>
-        <p class="text-muted mb-0"><?php echo $q === '' ? 'Enter a product name, brand or category to start searching.' : 'We found ' . number_format($totalItems) . ' matching products.'; ?></p>
+        <p class="text-muted mb-0">
+          <?php if ($q === ''): ?>
+            Enter a product name, brand or category to start searching.
+          <?php else: ?>
+            Search for "<?php echo htmlspecialchars($q); ?>" took <?php echo number_format($searchDurationMs, 2); ?> ms and found <?php echo number_format($totalItems); ?> matching product(s).
+          <?php endif; ?>
+        </p>
       </div>
       <a href="view_cart.php" class="btn btn-success mt-3 mt-md-0">Cart <span class="badge bg-light text-dark"><?php echo count($_SESSION['cart']); ?></span></a>
     </div>

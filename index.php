@@ -183,7 +183,7 @@ include 'templates/header.php';
     <div class="d-flex justify-content-between align-items-center mb-4 flex-column flex-md-row">
       <div>
         <h2 class="h4 mb-1"><?php echo $activeSubcategory ? htmlspecialchars($activeCategory['name'] . ' / ' . $activeSubcategory['name']) : ($activeCategory ? htmlspecialchars($activeCategory['name']) : 'Products'); ?></h2>
-        <p class="text-muted mb-0"><?php echo $activeSubcategory ? 'Showing products for the selected subcategory.' : ($activeCategory ? 'Showing products for the selected category.' : 'Responsive product cards for customers.'); ?></p>
+        <p class="text-muted mb-0"><?php echo $activeSubcategory ? 'Showing products for the selected subcategory.' : ($activeCategory ? 'Showing products for the selected category.' : 'Shop the latest essentials and trending deals for you.'); ?></p>
         <?php if ($activeCategory && !$activeSubcategory && !empty($activeCategory['subcategories'])): ?>
           <div class="mt-3">
             <span class="small text-secondary">Subcategories:</span>

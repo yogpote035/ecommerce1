@@ -10,9 +10,12 @@ $response = [
     'query' => $query,
     'results' => [],
     'suggestions' => [],
-    'history' => []
+    'history' => [],
+    'timing_ms' => 0,
+    'total_results' => 0,
 ];
 
+$searchStartedAt = microtime(true);
 $searchTerm = '%' . strtolower($query) . '%';
 $customerId = $_SESSION['customer_id'] ?? $_SESSION['cid'] ?? 0;
 
@@ -201,7 +204,8 @@ if ($customerId > 0 && ensureSearchHistoryTable($conn)) {
 }
 
 $response['history'] = array_values(array_unique($response['history'], SORT_REGULAR));
-
+$response['timing_ms'] = round((microtime(true) - $searchStartedAt) * 1000, 2);
+$response['total_results'] = count($response['results']);
 $response['success'] = true;
 
 echo json_encode($response);
