@@ -45,7 +45,7 @@ class SecurityHelper {
         }
 
         $info = password_get_info($hash);
-        return $info['algo'] !== 0;
+        return !empty($info['algo']) && $info['algo'] !== 0;
     }
     
     /**

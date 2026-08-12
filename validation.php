@@ -3,6 +3,19 @@ require_once 'init.php';
 require_once 'helpers/CategoryHelper.php';
 $siteTitle = 'Admin Product Management';
 
+// Early request logging for admin login troubleshooting (does not log passwords)
+$logDir = __DIR__ . '/logs';
+if (!is_dir($logDir)) {
+  @mkdir($logDir, 0755, true);
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  $entryEmail = strtolower(trim(filter_var($_POST['email'] ?? '', FILTER_SANITIZE_EMAIL)));
+  $hasCsrf = isset($_POST['csrf_token']) ? 1 : 0;
+  $keys = array_keys($_POST);
+  $line = sprintf("[%s] validation-entry: email=%s csrf=%d keys=%s\n", date('c'), $entryEmail, $hasCsrf, implode(',', $keys));
+  @file_put_contents($logDir . '/validation-entry.log', $line, FILE_APPEND | LOCK_EX);
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!SecurityHelper::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
         $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Invalid CSRF token. Please try again.'];
@@ -35,9 +48,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     mysqli_stmt_execute($stmt);
     mysqli_stmt_bind_result($stmt, $aid, $storedPassword);
+    // Debug log: capture admin login attempts without storing sensitive passwords
+    $logDir = __DIR__ . '/logs';
+    if (!is_dir($logDir)) {
+      @mkdir($logDir, 0755, true);
+    }
     if (mysqli_stmt_fetch($stmt)) {
-        $legacyPassword = !SecurityHelper::isPasswordHash($storedPassword) && $storedPassword === $apass;
-        $passwordMatches = SecurityHelper::verifyPassword($apass, $storedPassword) || $legacyPassword;
+      $legacyPassword = !SecurityHelper::isPasswordHash($storedPassword) && $storedPassword === $apass;
+      $passwordMatches = SecurityHelper::verifyPassword($apass, $storedPassword) || $legacyPassword;
+      $storedLen = strlen((string)$storedPassword);
+      $inputLen = strlen((string)$apass);
+      $storedPrefix = substr((string)$storedPassword, 0, 6);
+      $isHash = SecurityHelper::isPasswordHash($storedPassword) ? 'hash' : 'plain';
+      $logLine = sprintf("[%s] admin-login: email=%s found=1 type=%s stored_len=%d input_len=%d stored_pref=%s legacy=%d match=%d\n", date('c'), $email, $isHash, $storedLen, $inputLen, $storedPrefix, (int)$legacyPassword, (int)$passwordMatches);
+      @file_put_contents($logDir . '/admin-login-debug.log', $logLine, FILE_APPEND | LOCK_EX);
 
         if ($passwordMatches) {
             if ($legacyPassword) {
@@ -68,9 +92,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
     } else {
-        $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Invalid email or password.'];
-        header('Location: auth.php?role=admin&mode=login');
-        exit();
+      $logLine = sprintf("[%s] admin-login: email=%s found=0\n", date('c'), $email);
+      @file_put_contents($logDir . '/admin-login-debug.log', $logLine, FILE_APPEND | LOCK_EX);
+      $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Invalid email or password.'];
+      header('Location: auth.php?role=admin&mode=login');
+      exit();
     }
 
     mysqli_stmt_close($stmt);
