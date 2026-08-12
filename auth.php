@@ -11,7 +11,7 @@ include 'templates/header.php';
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
           <div>
             <h1 class="h3">Account Access</h1>
-            <p class="text-muted mb-0">Use email and password for customer or admin accounts. Sign up once and the app generates your account ID automatically.</p>
+            <p class="text-muted mb-0">Customer accounts can sign up and log in. Admin access is login-only.</p>
           </div>
           <div class="btn-group auth-toggle mt-3 mt-md-0" role="group" aria-label="User type toggle">
             <button type="button" class="btn btn-outline-primary active" id="roleCustomer">Customer</button>
@@ -185,41 +185,6 @@ include 'templates/header.php';
             </div>
           </div>
 
-          <div class="auth-panel d-none" data-role="admin" data-mode="signup">
-            <h2 class="h5 mb-3">Admin Sign Up</h2>
-            <form action="All.php" method="post">
-              <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
-              <div class="mb-3">
-                <label for="adminRegisterName" class="form-label">Name</label>
-                <input id="adminRegisterName" name="aname" type="text" class="form-control" required>
-              </div>
-              <div class="mb-3">
-                <label for="adminRegisterEmail" class="form-label">Email</label>
-                <input id="adminRegisterEmail" name="email" type="email" class="form-control" required>
-              </div>
-              <div class="mb-3">
-                <label for="adminAddress" class="form-label">Address</label>
-                <input id="adminAddress" name="aadd" type="text" class="form-control" required>
-              </div>
-              <div class="mb-3">
-                <label for="adminRegisterPass" class="form-label">Password</label>
-                <div class="input-group">
-                  <input id="adminRegisterPass" name="apass" type="password" class="form-control  py-4" required>
-                  <div class="input-group-append">
-                    <button type="button" class="btn btn-outline-secondary password-toggle" aria-label="Toggle password visibility">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0"/>
-                        <path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8m8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7"/>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <button type="submit" class="btn btn-success">Sign Up</button>
-            </form>
-          </div>
-
-
         </div>
       </div>
     </div>
@@ -243,21 +208,39 @@ include 'templates/header.php';
     panels.forEach(panel => {
       const role = panel.getAttribute('data-role');
       const mode = panel.getAttribute('data-mode');
-      panel.classList.toggle('d-none', role !== selectedRole || mode !== selectedMode);
+      const shouldShow = role === selectedRole && mode === selectedMode;
+      panel.classList.toggle('d-none', !shouldShow);
     });
+  }
+
+  function syncModeUi() {
+    if (modeButtons.signup) {
+      modeButtons.signup.style.display = selectedRole === 'customer' ? '' : 'none';
+    }
+    modeButtons.login.classList.toggle('active', selectedMode === 'login');
+    if (modeButtons.signup) {
+      modeButtons.signup.classList.toggle('active', selectedMode === 'signup');
+    }
   }
 
   function setActiveRole(role) {
     selectedRole = role;
+    if (selectedRole === 'admin') {
+      selectedMode = 'login';
+    }
     roleButtons.customer.classList.toggle('active', role === 'customer');
     roleButtons.admin.classList.toggle('active', role === 'admin');
+    syncModeUi();
     updatePanels();
   }
 
   function setActiveMode(mode) {
-    selectedMode = mode;
-    modeButtons.login.classList.toggle('active', mode === 'login');
-    modeButtons.signup.classList.toggle('active', mode === 'signup');
+    if (selectedRole === 'admin') {
+      selectedMode = 'login';
+    } else {
+      selectedMode = mode;
+    }
+    syncModeUi();
     updatePanels();
   }
 
@@ -271,6 +254,18 @@ include 'templates/header.php';
 
     passwordMethod.classList.toggle('d-none', show);
     otpMethod.classList.toggle('d-none', !show);
+  }
+
+  function getInitialState() {
+    const params = new URLSearchParams(window.location.search);
+    const role = params.get('role');
+    const mode = params.get('mode');
+    const otp = params.get('otp') === '1';
+    return {
+      role: role === 'admin' ? 'admin' : 'customer',
+      mode: role === 'admin' ? 'login' : (mode === 'signup' ? 'signup' : 'login'),
+      otp: otp
+    };
   }
 
   function initAuthActions() {
@@ -287,24 +282,9 @@ include 'templates/header.php';
     roleButtons.customer.addEventListener('click', () => setActiveRole('customer'));
     roleButtons.admin.addEventListener('click', () => setActiveRole('admin'));
     modeButtons.login.addEventListener('click', () => setActiveMode('login'));
-    modeButtons.signup.addEventListener('click', () => setActiveMode('signup'));
-
-    // Ensure the correct panel is visible on first load.
-    updatePanels();
-  }
-
-  document.addEventListener('DOMContentLoaded', initAuthActions);
-
-  function getInitialState() {
-    const params = new URLSearchParams(window.location.search);
-    const role = params.get('role');
-    const mode = params.get('mode');
-    const otp = params.get('otp') === '1';
-    return {
-      role: role === 'admin' ? 'admin' : 'customer',
-      mode: mode === 'signup' ? 'signup' : 'login',
-      otp: otp
-    };
+    if (modeButtons.signup) {
+      modeButtons.signup.addEventListener('click', () => setActiveMode('signup'));
+    }
   }
 
   function initPasswordToggles() {
@@ -327,10 +307,12 @@ include 'templates/header.php';
 
   document.addEventListener('DOMContentLoaded', () => {
     const state = getInitialState();
-    setActiveRole(state.role);
-    setActiveMode(state.mode);
+    selectedRole = state.role;
+    selectedMode = state.mode;
+    initAuthActions();
+    setActiveRole(selectedRole);
     if (state.otp) {
-      toggleOtpLogin(state.role, true);
+      toggleOtpLogin(selectedRole, true);
     }
     initPasswordToggles();
   });

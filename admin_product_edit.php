@@ -367,15 +367,21 @@ document.addEventListener('DOMContentLoaded', function() {
     list.className = 'image-preview-grid';
 
     Array.from(files).forEach(function(file) {
+      if (!file.type || !file.type.startsWith('image/')) {
+        return;
+      }
+
       var item = document.createElement('div');
       item.className = 'image-preview-item';
 
       var image = document.createElement('img');
       image.alt = file.name;
-      image.src = URL.createObjectURL(file);
-      image.onload = function() {
-        URL.revokeObjectURL(image.src);
+
+      var reader = new FileReader();
+      reader.onload = function (event) {
+        image.src = event.target.result;
       };
+      reader.readAsDataURL(file);
 
       var meta = document.createElement('div');
       meta.className = 'image-preview-meta';
