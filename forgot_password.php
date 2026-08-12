@@ -157,8 +157,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $passwordHash = SecurityHelper::hashPassword($password);
         if ($role === 'admin') {
-            $update = mysqli_prepare($conn, 'UPDATE aregister SET apass = ? WHERE email = ?');
-            mysqli_stmt_bind_param($update, 'ss', $passwordHash, $email);
+          // Store admin passwords as plain text per request (insecure but requested)
+          $update = mysqli_prepare($conn, 'UPDATE aregister SET apass = ? WHERE email = ?');
+          mysqli_stmt_bind_param($update, 'ss', $password, $email);
         } else {
             $hasConfirmColumn = forgotPasswordColumnExists($conn, 'cregister', 'Cconpass');
             if ($hasConfirmColumn) {

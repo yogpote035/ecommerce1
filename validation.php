@@ -64,20 +64,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       @file_put_contents($logDir . '/admin-login-debug.log', $logLine, FILE_APPEND | LOCK_EX);
 
         if ($passwordMatches) {
-            if ($legacyPassword) {
-                $newHash = SecurityHelper::hashPassword($apass);
-                $updateStmt = mysqli_prepare($conn, "UPDATE aregister SET apass = ? WHERE aid = ?");
-                if ($updateStmt) {
-                    mysqli_stmt_bind_param($updateStmt, 'si', $newHash, $aid);
-                    mysqli_stmt_execute($updateStmt);
-                    mysqli_stmt_close($updateStmt);
-                }
-            }
-
-            $_SESSION['admin_id'] = $aid;
-            $_SESSION['aname'] = $email;
-            $_SESSION['admin_email'] = $email;
-            $_SESSION['admin_logged_in'] = true;
+          // Do not re-hash admin plaintext passwords on login; keep stored value as-is per request.
+          $_SESSION['admin_id'] = $aid;
+          $_SESSION['aname'] = $email;
+          $_SESSION['admin_email'] = $email;
+          $_SESSION['admin_logged_in'] = true;
             if (!empty($_POST['remember_me'])) {
                 issueRememberToken($conn, $aid, 'admin');
             }
