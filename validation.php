@@ -5,7 +5,9 @@ $siteTitle = 'Admin Product Management';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!SecurityHelper::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
-        die('Invalid CSRF token');
+        $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Invalid CSRF token. Please try again.'];
+        header('Location: auth.php?role=admin&mode=login');
+        exit();
     }
 
     $email = SecurityHelper::sanitizeEmail($_POST['email'] ?? '');
