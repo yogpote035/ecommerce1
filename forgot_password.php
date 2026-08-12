@@ -83,7 +83,7 @@ $resetStatus = $token !== '' ? getPasswordResetStatus($resetRecord) : null;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!SecurityHelper::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
         $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Invalid form token.'];
-        header('Location: forgot_password.php');
+        header('Location: forgot_password.php?role=' . urlencode($role));
         exit;
     }
 

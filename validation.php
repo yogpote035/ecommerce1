@@ -36,8 +36,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     mysqli_stmt_execute($stmt);
     mysqli_stmt_bind_result($stmt, $aid, $aname, $storedPassword);
     if (mysqli_stmt_fetch($stmt)) {
-        $passwordMatches = $storedPassword === $apass;
+        $legacyPassword = !SecurityHelper::isPasswordHash($storedPassword) && $storedPassword === $apass;
+        $passwordMatches = SecurityHelper::verifyPassword($apass, $storedPassword) || $legacyPassword;
+
         if ($passwordMatches) {
+            if ($legacyPassword) {
+                $newHash = SecurityHelper::hashPassword($apass);
+                $updateStmt = mysqli_prepare($conn, "UPDATE aregister SET apass = ? WHERE aid = ?");
+                if ($updateStmt) {
+                    mysqli_stmt_bind_param($updateStmt, 'si', $newHash, $aid);
+                    mysqli_stmt_execute($updateStmt);
+                    mysqli_stmt_close($updateStmt);
+                }
+            }
+
             $_SESSION['admin_id'] = $aid;
             $_SESSION['aname'] = $aname;
             $_SESSION['admin_email'] = $email;
