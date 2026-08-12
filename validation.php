@@ -20,18 +20,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt = mysqli_prepare($conn, "SELECT aid, aname, apass FROM aregister WHERE email = ?");
     mysqli_stmt_bind_param($stmt, 's', $email);
     mysqli_stmt_execute($stmt);
-    mysqli_stmt_bind_result($stmt, $aid, $aname, $storedHash);
+    mysqli_stmt_bind_result($stmt, $aid, $aname, $storedPassword);
     if (mysqli_stmt_fetch($stmt)) {
-        $legacyPassword = !SecurityHelper::isPasswordHash($storedHash) && $storedHash === $apass;
-        if (SecurityHelper::verifyPassword($apass, $storedHash) || $legacyPassword) {
-            if ($legacyPassword) {
-                $newHash = SecurityHelper::hashPassword($apass);
-                $updateStmt = mysqli_prepare($conn, "UPDATE aregister SET apass = ? WHERE aid = ?");
-                mysqli_stmt_bind_param($updateStmt, 'si', $newHash, $aid);
-                mysqli_stmt_execute($updateStmt);
-                mysqli_stmt_close($updateStmt);
-            }
-
+        $passwordMatches = $storedPassword === $apass;
+        if ($passwordMatches) {
             $_SESSION['admin_id'] = $aid;
             $_SESSION['aname'] = $aname;
             $_SESSION['admin_email'] = $email;
