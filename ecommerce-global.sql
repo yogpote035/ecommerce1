@@ -77,17 +77,15 @@ INSERT INTO `apadd` (`Apid`, `apname`, `apbrand`, `apcategory`, `apqty`, `appric
 DROP TABLE IF EXISTS `aregister`;
 CREATE TABLE `aregister` (
   `aid` int NOT NULL AUTO_INCREMENT,
-  `aname` varchar(100) NOT NULL,
   `email` varchar(255) DEFAULT NULL,
-  `aadd` varchar(255) DEFAULT NULL,
   `apass` varchar(255) NOT NULL,
   PRIMARY KEY (`aid`),
   UNIQUE KEY `email` (`email`),
   KEY `email_2` (`email`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO `aregister` (`aid`, `aname`, `email`, `aadd`, `apass`) VALUES ('1', 'admin', 'admin@gmail.com', 'Main Office', 'admin123');
-INSERT INTO `aregister` (`aid`, `aname`, `email`, `aadd`, `apass`) VALUES ('2', 'Yogesh Dattatray pote', 'yogpote035@gmail.com', 'Shree Balaji PG New / Amber Apartments', '$2y$12$yYd.RsIfHFyxWG20TltMb.zwj0AfNO0g0nBhehfOECQz2.f0ohGxi');
+INSERT INTO `aregister` (`aid`, `email`, `apass`) VALUES ('1', 'admin@gmail.com', 'admin123');
+INSERT INTO `aregister` (`aid`, `email`, `apass`) VALUES ('2', 'yogpote035@gmail.com', '$2y$12$yYd.RsIfHFyxWG20TltMb.zwj0AfNO0g0nBhehfOECQz2.f0ohGxi');
 
 DROP TABLE IF EXISTS `backup_logs`;
 CREATE TABLE `backup_logs` (

@@ -125,14 +125,14 @@ if ($action === 'verify_otp') {
     unset($_SESSION['otp_email'], $_SESSION['otp_user_type']);
 
     if ($userType === 'admin') {
-        $stmt = $conn->prepare('SELECT aid, aname, email FROM aregister WHERE email = ? LIMIT 1');
+        $stmt = $conn->prepare('SELECT aid, email FROM aregister WHERE email = ? LIMIT 1');
         $stmt->bind_param('s', $email);
         $stmt->execute();
         $admin = $stmt->get_result()->fetch_assoc();
         $stmt->close();
 
         $_SESSION['admin_id'] = $admin['aid'];
-        $_SESSION['aname'] = $admin['aname'];
+        $_SESSION['aname'] = $admin['email'];
         $_SESSION['admin_email'] = $admin['email'];
         $_SESSION['admin_logged_in'] = true;
         $_SESSION['toast'] = ['type' => 'success', 'message' => 'Admin logged in with OTP successfully.'];

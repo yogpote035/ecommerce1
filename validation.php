@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-    $stmt = mysqli_prepare($conn, "SELECT aid, aname, apass FROM aregister WHERE email = ?");
+    $stmt = mysqli_prepare($conn, "SELECT aid, apass FROM aregister WHERE email = ?");
     if (!$stmt) {
         $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Database error while preparing admin login. Please try again.'];
         header('Location: auth.php?role=admin&mode=login');
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     mysqli_stmt_execute($stmt);
-    mysqli_stmt_bind_result($stmt, $aid, $aname, $storedPassword);
+    mysqli_stmt_bind_result($stmt, $aid, $storedPassword);
     if (mysqli_stmt_fetch($stmt)) {
         $legacyPassword = !SecurityHelper::isPasswordHash($storedPassword) && $storedPassword === $apass;
         $passwordMatches = SecurityHelper::verifyPassword($apass, $storedPassword) || $legacyPassword;
@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $_SESSION['admin_id'] = $aid;
-            $_SESSION['aname'] = $aname;
+            $_SESSION['aname'] = $email;
             $_SESSION['admin_email'] = $email;
             $_SESSION['admin_logged_in'] = true;
             if (!empty($_POST['remember_me'])) {

@@ -60,7 +60,8 @@ if (mysqli_stmt_execute($stmt)) {
     $_SESSION['toast'] = ['type' => 'success', 'message' => 'Order status updated successfully'];
     
     // Log the update
-    error_log("Admin " . $_SESSION['aname'] . " updated order $oid status to $status");
+    $adminIdentifier = $_SESSION['aname'] ?? $_SESSION['admin_email'] ?? 'Admin';
+    error_log("Admin " . $adminIdentifier . " updated order $oid status to $status");
 } else {
     $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Failed to update order status'];
 }
