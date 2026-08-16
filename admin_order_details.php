@@ -233,14 +233,14 @@ include 'templates/header.php';
                         <div class="form-group">
                             <label for="status">Update Status:</label>
                             <select name="status" id="status" class="form-control" required>
-                                <option value="">Select new status</option>
-                                <option value="Pending">Pending</option>
-                                <option value="Confirmed">Confirmed</option>
-                                <option value="Packed">Packed</option>
-                                <option value="Shipped">Shipped</option>
-                                <option value="Out For Delivery">Out For Delivery</option>
-                                <option value="Delivered">Delivered</option>
-                                <option value="Cancelled">Cancelled</option>
+                                <?php
+                                $currentStatus = $order['latest_status'] ?? 'Pending';
+                                $statuses = ['Pending', 'Confirmed', 'Packed', 'Shipped', 'Out For Delivery', 'Delivered', 'Cancelled'];
+                                foreach ($statuses as $statusOption) {
+                                    $selected = $statusOption === $currentStatus ? ' selected' : '';
+                                    echo '<option value="' . htmlspecialchars($statusOption) . '"' . $selected . '>' . htmlspecialchars($statusOption) . '</option>';
+                                }
+                                ?>
                             </select>
                         </div>
                         <div class="form-group">

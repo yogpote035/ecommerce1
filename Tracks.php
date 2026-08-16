@@ -120,7 +120,7 @@ if ($result && mysqli_num_rows($result) > 0) {
     }
 }
 
-$statusSteps = ['Pending', 'Confirmed', 'Packed', 'Shipped', 'Out For Delivery', 'Delivered'];
+$statusSteps = ['Pending', 'Confirmed', 'Packed', 'Shipped', 'Out For Delivery', 'Delivered', 'Cancelled'];
 
 $getOrderTimeline = function ($trackedOrderId, $paymentStatus = 'Pending') use ($conn, $hasStatusLog, $statusSteps) {
     $logs = [];
@@ -150,6 +150,9 @@ $getOrderTimeline = function ($trackedOrderId, $paymentStatus = 'Pending') use (
     $latestIndex = array_search($latestStatus, $statusSteps, true);
     if ($latestIndex === false) {
         $latestIndex = 0;
+    }
+    if ($latestStatus === 'Cancelled') {
+        $latestIndex = array_search('Cancelled', $statusSteps, true);
     }
 
     return [$logs, $latestStatus, $latestIndex];
