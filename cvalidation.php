@@ -45,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 mysqli_stmt_close($updateStmt);
             }
 
+            clear_role_session('admin');
             $_SESSION['customer_id'] = $cid;
             $_SESSION['cid'] = $cid;
             $_SESSION['customer_email'] = $email;

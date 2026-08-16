@@ -65,6 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($passwordMatches) {
           // Do not re-hash admin plaintext passwords on login; keep stored value as-is per request.
+          clear_role_session('customer');
           $_SESSION['admin_id'] = $aid;
           $_SESSION['aname'] = $email;
           $_SESSION['admin_email'] = $email;
@@ -93,10 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     mysqli_stmt_close($stmt);
 }
 
-if (empty($_SESSION['admin_logged_in']) || empty($_SESSION['admin_id'])) {
-    header('Location: auth.php?role=admin&mode=login');
-    exit;
-}
+require_admin_route();
 
 $categoryHelper = new CategoryHelper($conn);
 $categories = $categoryHelper->getCategoriesHierarchy();

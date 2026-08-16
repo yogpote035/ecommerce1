@@ -37,7 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (mysqli_stmt_execute($stmt)) {
         $newCustomerId = mysqli_insert_id($conn);
+        clear_role_session('admin');
         $_SESSION['customer_id'] = $newCustomerId;
+        $_SESSION['cid'] = $newCustomerId;
         $_SESSION['customer_email'] = $Cemail;
         $_SESSION['customer_logged_in'] = true;
         SecurityHelper::logActivity($conn, 'create', 'customer', $newCustomerId, $newCustomerId, 'customer');

@@ -24,16 +24,9 @@ require_once dirname(__DIR__) . '/helpers/SecurityHelper.php';
 // AUTHENTICATION CHECK
 // ========================================
 
-if (!isset($_SESSION['cid']) && !isset($_SESSION['customer_id']) && !isset($_SESSION['aid'])) {
-    http_response_code(401);
-    die(json_encode([
-        'success' => false,
-        'error' => 'User not authenticated'
-    ]));
-}
+require_customer_api();
 
 $customerId = $_SESSION['cid'] ?? $_SESSION['customer_id'] ?? 0;
-$adminId = $_SESSION['aid'] ?? 0;
 
 ensurePaymentTrackingSchema();
 

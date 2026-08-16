@@ -4,11 +4,7 @@ require_once 'init.php';
 $siteTitle = 'Admin Products Management';
 $csrfToken = SecurityHelper::generateCSRFToken();
 
-// Check admin authentication
-if (empty($_SESSION['admin_logged_in']) || empty($_SESSION['admin_id'])) {
-    header('Location: auth.php?role=admin&mode=login');
-    exit;
-}
+require_admin_route();
 
 // Pagination setup
 $itemsPerPage = PaginationHelper::PER_PAGE;

@@ -6,10 +6,7 @@ require_once 'helpers/ProductImageHelper.php';
 $siteTitle = 'Edit Product';
 
 // Check admin authentication
-if (empty($_SESSION['admin_logged_in']) || empty($_SESSION['admin_id'])) {
-    header('Location: auth.php?role=admin&mode=login');
-    exit;
-}
+require_admin_route();
 
 $productId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $product = null;

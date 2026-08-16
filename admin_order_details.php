@@ -3,11 +3,7 @@ require_once 'init.php';
 $siteTitle = 'Admin - Order Details';
 $csrfToken = SecurityHelper::generateCSRFToken();
 
-// Check admin authentication
-if (empty($_SESSION['admin_logged_in'])) {
-    header('Location: auth.php?role=admin&mode=login');
-    exit();
-}
+require_admin_route();
 
 $oid = isset($_GET['oid']) ? (int)$_GET['oid'] : 0;
 

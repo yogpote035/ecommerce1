@@ -307,9 +307,28 @@ class CategoryHelper {
         return $category;
     }
 
-    public function getSubcategoryBySlug($slug) {
+    public function getSubcategoryBySlug($slug, $categorySlug = '') {
         if ($slug === '' || !$this->hasSchema) {
             return null;
+        }
+
+        if ($categorySlug !== '') {
+            $stmt = $this->db->prepare(
+                'SELECT s.id, s.name, s.slug, s.description, s.category_id, c.name AS category_name, c.slug AS category_slug FROM sub_categories s INNER JOIN categories c ON c.id = s.category_id WHERE s.slug = ? AND c.slug = ? AND s.is_active = 1 AND c.is_active = 1 LIMIT 1'
+            );
+            if (!$stmt) {
+                return null;
+            }
+
+            mysqli_stmt_bind_param($stmt, 'ss', $slug, $categorySlug);
+            mysqli_stmt_execute($stmt);
+            $result = mysqli_stmt_get_result($stmt);
+            $subcategory = mysqli_fetch_assoc($result) ?: null;
+            mysqli_stmt_close($stmt);
+
+            if ($subcategory) {
+                return $subcategory;
+            }
         }
 
         $stmt = $this->db->prepare(
@@ -361,7 +380,7 @@ class CategoryHelper {
             mysqli_stmt_bind_param($stmt, 'ss', $categoryValue, $categoryLike);
             mysqli_stmt_execute($stmt);
             $result = mysqli_stmt_get_result($stmt);
-            $targetSlug = $this->looseSlug($subcategory['slug'] ?? $subcategoryName);
+            $targetSlug = $this->normalizeSlug($subcategory['slug'] ?? $subcategoryName);
             $products = $this->normalizeProducts(array_filter(mysqli_fetch_all($result, MYSQLI_ASSOC), function ($row) use ($categoryName, $subcategoryName, $targetSlug) {
                 $categoryValue = (string) ($row['apcategory'] ?? '');
                 if (strcasecmp($categoryValue, $categoryName . ' > ' . $subcategoryName) === 0) {
@@ -369,7 +388,7 @@ class CategoryHelper {
                 }
                 $parts = array_map('trim', explode('>', $categoryValue));
                 $rowSubcategory = $parts[1] ?? '';
-                return $rowSubcategory !== '' && $this->looseSlug($rowSubcategory) === $targetSlug;
+                return $rowSubcategory !== '' && $this->normalizeSlug($rowSubcategory) === $targetSlug;
             }));
             mysqli_stmt_close($stmt);
             return $products;
@@ -540,11 +559,11 @@ class CategoryHelper {
         }, $rows)));
     }
 
-    private function looseSlug($value) {
+    private function normalizeSlug($value) {
         $slug = strtolower(trim((string) $value));
         $slug = preg_replace('/[^a-z0-9]+/', '-', $slug);
-        $slug = trim($slug, '-');
-        return preg_replace('/s\b/', '', $slug);
+        $slug = preg_replace('/-+/', '-', $slug);
+        return trim($slug, '-');
     }
 
     private function tableExists($table) {

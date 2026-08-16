@@ -21,9 +21,9 @@ $productStock = htmlspecialchars($product['stock'] ?? '');
 $productCardMode = $productCardMode ?? '';
 $isRetailerCard = false;
 
-// Check if user is logged in
-$isLoggedIn = !empty($_SESSION['admin_logged_in']) || !empty($_SESSION['customer_logged_in']);
-$cartUrl = $isLoggedIn ? 'add_cart.php?id=' . $productId : 'auth.php?redirect=' . urlencode('product.php?id=' . $productId);
+$isAdminViewer = !empty($_SESSION['admin_logged_in']);
+$isCustomerViewer = !empty($_SESSION['customer_logged_in']);
+$cartUrl = $isCustomerViewer ? 'add_cart.php?id=' . $productId : 'auth.php?role=customer&mode=login&redirect=' . urlencode('product.php?id=' . $productId);
 $detailsUrl = 'product.php?id=' . $productId;
 $customerIdForWishlist = $_SESSION['customer_id'] ?? $_SESSION['cid'] ?? 0;
 $isWishlisted = (!$isRetailerCard && $customerIdForWishlist > 0) ? WishlistHelper::isWishlisted($conn, $customerIdForWishlist, $productId) : false;
@@ -53,8 +53,13 @@ $wishlistToken = !$isRetailerCard ? SecurityHelper::generateCSRFToken() : '';
       </div>
       <div class="d-flex justify-content-between align-items-center mb-3">
         <span class="badge rounded-pill bg-secondary py-2 px-3"><?php echo $productRating; ?> &#9733;</span>
-        <a href="<?php echo htmlspecialchars($cartUrl); ?>" class="btn btn-primary">Add to cart</a>
+        <?php if (!$isAdminViewer): ?>
+          <a href="<?php echo htmlspecialchars($cartUrl); ?>" class="btn btn-primary">Add to cart</a>
+        <?php else: ?>
+          <a href="<?php echo htmlspecialchars($detailsUrl); ?>" class="btn btn-outline-primary">View</a>
+        <?php endif; ?>
       </div>
+      <?php if (!$isAdminViewer): ?>
       <form method="post" action="wishlist_action.php" class="mb-0">
           <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($wishlistToken); ?>">
           <input type="hidden" name="product_id" value="<?php echo $productId; ?>">
@@ -63,6 +68,7 @@ $wishlistToken = !$isRetailerCard ? SecurityHelper::generateCSRFToken() : '';
             <?php echo $isWishlisted ? 'Saved to wishlist' : 'Save to wishlist'; ?>
           </button>
         </form>
+      <?php endif; ?>
     </div>
   </div>
 </div>

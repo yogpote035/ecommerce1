@@ -5,10 +5,7 @@ require_once 'helpers/ProductImageHelper.php';
 $siteTitle = 'Product Images';
 $csrfToken = SecurityHelper::generateCSRFToken();
 
-if (empty($_SESSION['admin_logged_in']) || empty($_SESSION['admin_id'])) {
-    header('Location: auth.php?role=admin&mode=login');
-    exit;
-}
+require_admin_route();
 
 $productId = isset($_GET['id']) ? (int) $_GET['id'] : (int) ($_POST['product_id'] ?? 0);
 $product = null;

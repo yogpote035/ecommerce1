@@ -3,10 +3,7 @@ require_once 'init.php';
 
 $siteTitle = 'Admin Customers';
 
-if (empty($_SESSION['admin_logged_in']) || empty($_SESSION['admin_id'])) {
-    header('Location: auth.php?role=admin&mode=login');
-    exit;
-}
+require_admin_route();
 
 $search = trim($_GET['q'] ?? '');
 $where = '';

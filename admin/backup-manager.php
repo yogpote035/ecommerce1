@@ -2,10 +2,7 @@
 require_once __DIR__ . '/../init.php';
 require_once __DIR__ . '/../config/Database.php';
 
-if (empty($_SESSION['admin_logged_in'])) {
-    header('Location: ../auth.php?role=admin&mode=login');
-    exit;
-}
+require_admin_route();
 
 $siteTitle = 'Backup Manager';
 $backupDir = realpath(__DIR__ . '/..') . DIRECTORY_SEPARATOR . 'backups';

@@ -2,10 +2,7 @@
 require_once 'init.php';
 
 // Check admin authentication
-if (empty($_SESSION['admin_logged_in']) || empty($_SESSION['admin_id'])) {
-    header('Location: auth.php?role=admin&mode=login');
-    exit;
-}
+require_admin_route();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Invalid delete request.'];

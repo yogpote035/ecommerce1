@@ -9,11 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-if (empty($_SESSION['admin_logged_in']) || empty($_SESSION['admin_id'])) {
-    $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Please login as admin to add products.'];
-    header('Location: auth.php?role=admin&mode=login');
-    exit;
-}
+require_admin_route();
 
 if (!SecurityHelper::verifyCSRFToken($_POST['csrf_token'] ?? '')) {
     $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Invalid form token. Please try again.'];

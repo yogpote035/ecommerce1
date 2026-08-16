@@ -1,5 +1,6 @@
 <?php
 require_once 'init.php';
+require_customer_route('view_cart.php');
 $customerId = $_SESSION['customer_id'] ?? $_SESSION['cid'] ?? 0;
 
 if ($customerId > 0) {

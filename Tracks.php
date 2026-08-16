@@ -1,7 +1,10 @@
 <?php
+require_once 'init.php';
+require_customer_route('Track.php');
+
 $orderId = (int)($_GET['order'] ?? $_GET['order_id'] ?? $_GET['oid'] ?? 0);
 $customerId = (int)($_SESSION['customer_id'] ?? $_SESSION['cid'] ?? 0);
-$isAdminTracking = !empty($_SESSION['admin_logged_in']);
+$isAdminTracking = false;
 $orders = [];
 $itemsPerPage = PaginationHelper::PER_PAGE;
 $currentPage = PaginationHelper::currentPage();

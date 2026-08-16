@@ -3,10 +3,7 @@ require_once 'init.php';
 
 $siteTitle = 'Admin Logs';
 
-if (empty($_SESSION['admin_logged_in']) || empty($_SESSION['admin_id'])) {
-    header('Location: auth.php?role=admin&mode=login');
-    exit;
-}
+require_admin_route();
 
 mysqli_query($conn, "CREATE TABLE IF NOT EXISTS activity_logs (
     id INT AUTO_INCREMENT PRIMARY KEY,

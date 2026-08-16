@@ -4,10 +4,7 @@ require_once 'init.php';
 $siteTitle = 'Admin Categories';
 $csrfToken = SecurityHelper::generateCSRFToken();
 
-if (empty($_SESSION['admin_logged_in']) || empty($_SESSION['admin_id'])) {
-    header('Location: auth.php?role=admin&mode=login');
-    exit;
-}
+require_admin_route();
 
 function ensureCategoryTables($conn) {
     mysqli_query($conn, "CREATE TABLE IF NOT EXISTS categories (

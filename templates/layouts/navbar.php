@@ -7,7 +7,7 @@ $isRetailer = false;
 $isLoggedIn = $isAdmin || $isCustomer;
 $navbarCurrentPage = basename($_SERVER['PHP_SELF']);
 $categoryHelperForNav = new CategoryHelper($conn);
-$navCategories = array_slice($categoryHelperForNav->getCategoriesHierarchy(), 0, 8);
+$navCategories = $categoryHelperForNav->getCategoriesHierarchy();
 
 if ($isAdmin) {
     $navItems = [
@@ -22,7 +22,7 @@ if ($isAdmin) {
         ['href' => 'validation.php', 'label' => 'Add Product'],
         ['href' => 'admin/backup-manager.php', 'label' => 'Backups'],
         ['href' => 'admin_logs.php', 'label' => 'Logs'],
-        ['href' => 'Track.php', 'label' => 'Track Orders'],
+        ['href' => 'admin_orders.php', 'label' => 'Track Orders'],
         ['href' => 'Contact.php', 'label' => 'Contact'],
     ];
 } elseif ($isCustomer) {
@@ -91,8 +91,8 @@ if ($customerId > 0) {
                       <?php echo htmlspecialchars($navCategory['name'] ?? 'Category'); ?>
                     </a>
                     <?php if (!empty($navCategory['subcategories'])): ?>
-                      <?php foreach (array_slice($navCategory['subcategories'], 0, 5) as $navSubcategory): ?>
-                        <a class="dropdown-item px-0 py-1 small" href="<?php echo htmlspecialchars(app_url('subcategory.php?slug=' . urlencode($navSubcategory['slug'] ?? ''))); ?>">
+                      <?php foreach ($navCategory['subcategories'] as $navSubcategory): ?>
+                        <a class="dropdown-item px-0 py-1 small" href="<?php echo htmlspecialchars(app_url('subcategory.php?category=' . urlencode($navCategory['slug'] ?? '') . '&slug=' . urlencode($navSubcategory['slug'] ?? ''))); ?>">
                           <?php echo htmlspecialchars($navSubcategory['name'] ?? 'Subcategory'); ?>
                         </a>
                       <?php endforeach; ?>

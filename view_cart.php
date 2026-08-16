@@ -1,5 +1,6 @@
 <?php
 require_once 'init.php';
+require_customer_route('view_cart.php');
 $siteTitle = 'Shopping Cart';
 include 'templates/header.php';
 ?>

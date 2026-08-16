@@ -2,21 +2,36 @@
 require_once 'init.php';
 require_once 'helpers/CategoryHelper.php';
 
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
+
 $siteTitle = 'Shop Subcategory';
 $categoryHelper = new CategoryHelper($conn);
+$requestedCategorySlug = trim($_GET['category'] ?? '');
 $slug = trim($_GET['slug'] ?? '');
 $priceMin = isset($_GET['price_min']) ? max(0, (float) $_GET['price_min']) : 0;
 $priceMax = isset($_GET['price_max']) ? max(0, (float) $_GET['price_max']) : 0;
 $sort = trim($_GET['sort'] ?? '');
-$subcategory = $categoryHelper->getSubcategoryBySlug($slug);
+$subcategory = $categoryHelper->getSubcategoryBySlug($slug, $requestedCategorySlug);
 $products = [];
 $notFound = false;
+$category = null;
 
 if ($subcategory) {
-    $category = !empty($subcategory['category_slug'])
-        ? $categoryHelper->getCategoryBySlug($subcategory['category_slug'])
-        : $categoryHelper->getCategoryById($subcategory['category_id']);
-    $categoryId = (int) ($category['id'] ?? $subcategory['category_id']);
+    $candidateCategory = null;
+    if ($requestedCategorySlug !== '') {
+        $candidateCategory = $categoryHelper->getCategoryBySlug($requestedCategorySlug);
+    }
+
+    if (!$candidateCategory || ((int) ($subcategory['category_id'] ?? 0) !== (int) ($candidateCategory['id'] ?? 0))) {
+        $candidateCategory = !empty($subcategory['category_slug'])
+            ? $categoryHelper->getCategoryBySlug($subcategory['category_slug'])
+            : $categoryHelper->getCategoryById((int) ($subcategory['category_id'] ?? 0));
+    }
+
+    $category = $candidateCategory ?: $categoryHelper->getCategoryById((int) ($subcategory['category_id'] ?? 0));
+    $categoryId = (int) ($category['id'] ?? $subcategory['category_id'] ?? 0);
     $products = $categoryHelper->getProductsByCategory($categoryId, $subcategory['id']);
 } else {
     $notFound = true;
@@ -60,14 +75,28 @@ include 'templates/header.php';
       <?php
         $filterAction = 'subcategory.php';
         $filterHidden = ['slug' => $slug];
-        $filterClearUrl = 'subcategory.php?slug=' . urlencode($slug);
+        $resolvedCategorySlug = $category['slug'] ?? $requestedCategorySlug;
+        if ($resolvedCategorySlug !== '') {
+            $filterHidden['category'] = $resolvedCategorySlug;
+        }
+        $filterClearUrl = 'subcategory.php?slug=' . urlencode($slug) . ($resolvedCategorySlug !== '' ? '&category=' . urlencode($resolvedCategorySlug) : '');
         include 'templates/components/filter-sidebar.php';
-        $activeCategorySlug = $category['slug'] ?? ($subcategory['category_slug'] ?? '');
+        $activeCategorySlug = $category['slug'] ?? ($subcategory['category_slug'] ?? $requestedCategorySlug);
         $activeSubcategorySlug = $subcategory['slug'] ?? $slug;
       ?>
       <?php include 'templates/components/category-menu.php'; ?>
     </div>
     <div class="col-lg-9">
+      <?php
+        if (!empty($category) && !empty($subcategory)) {
+            $breadcrumbs = [
+                ['label' => 'Home', 'href' => 'Home.php'],
+                ['label' => $category['name'], 'href' => 'category.php?slug=' . urlencode($category['slug'] ?? '')],
+                ['label' => $subcategory['name']],
+            ];
+            include 'templates/components/breadcrumb.php';
+        }
+      ?>
       <?php if ($notFound): ?>
         <div class="alert alert-warning">The requested subcategory was not found.</div>
       <?php else: ?>

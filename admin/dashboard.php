@@ -2,10 +2,7 @@
 require_once __DIR__ . '/../init.php';
 require_once __DIR__ . '/../config/Database.php';
 
-if (empty($_SESSION['admin_logged_in'])) {
-    header('Location: ../auth.php?role=admin&mode=login');
-    exit;
-}
+require_admin_route();
 
 function tableExists($conn, $table) {
     $stmt = mysqli_prepare($conn, 'SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?');

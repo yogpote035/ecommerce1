@@ -8,6 +8,8 @@ $product = null;
 $images = [];
 $helper = new ProductImageHelper($conn);
 $isRetailer = false;
+$isAdminViewer = is_admin_user();
+$isCustomerViewer = is_customer_user();
 
 if ($productId > 0) {
     $stmt = mysqli_prepare($conn, 'SELECT Apid, apname, apbrand, apcategory, apqty, apprice, apdescription, apimage FROM apadd WHERE Apid = ? LIMIT 1');
@@ -293,17 +295,21 @@ include 'templates/header.php';
 
             <!-- Action Buttons -->
             <div class="action-buttons">
-              <a href="add_cart.php?id=<?php echo urlencode($productId); ?>" class="btn btn-primary btn-lg">
-                <i class="fas fa-shopping-cart"></i> Add to Cart
-              </a>
-              <form method="post" action="wishlist_action.php" class="m-0">
-                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(SecurityHelper::generateCSRFToken()); ?>">
-                <input type="hidden" name="product_id" value="<?php echo $productId; ?>">
-                <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($_SERVER['REQUEST_URI'] ?? 'product.php?id=' . $productId); ?>">
-                <button type="submit" class="btn btn-outline-primary btn-lg">
-                  <?php echo $isWishlisted ? 'Saved to Wishlist' : 'Save to Wishlist'; ?>
-                </button>
-              </form>
+              <?php if (!$isAdminViewer): ?>
+                <a href="<?php echo $isCustomerViewer ? 'add_cart.php?id=' . urlencode($productId) : 'auth.php?role=customer&mode=login&redirect=' . urlencode('product.php?id=' . $productId); ?>" class="btn btn-primary btn-lg">
+                  <i class="fas fa-shopping-cart"></i> Add to Cart
+                </a>
+                <form method="post" action="wishlist_action.php" class="m-0">
+                  <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(SecurityHelper::generateCSRFToken()); ?>">
+                  <input type="hidden" name="product_id" value="<?php echo $productId; ?>">
+                  <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($_SERVER['REQUEST_URI'] ?? 'product.php?id=' . $productId); ?>">
+                  <button type="submit" class="btn btn-outline-primary btn-lg">
+                    <?php echo $isWishlisted ? 'Saved to Wishlist' : 'Save to Wishlist'; ?>
+                  </button>
+                </form>
+              <?php else: ?>
+                <a href="admin_products.php" class="btn btn-outline-primary btn-lg">Back to Products</a>
+              <?php endif; ?>
               <a href="index.php" class="btn btn-outline-secondary btn-lg">
                 ← Continue Shopping
               </a>

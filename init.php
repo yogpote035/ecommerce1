@@ -72,6 +72,80 @@ if (!function_exists('app_url')) {
     }
 }
 
+if (!function_exists('is_admin_user')) {
+    function is_admin_user() {
+        return !empty($_SESSION['admin_logged_in']) && !empty($_SESSION['admin_id']);
+    }
+}
+
+if (!function_exists('is_customer_user')) {
+    function is_customer_user() {
+        return !empty($_SESSION['customer_logged_in']) && !empty($_SESSION['customer_id']);
+    }
+}
+
+if (!function_exists('clear_role_session')) {
+    function clear_role_session($role) {
+        if ($role === 'admin') {
+            unset($_SESSION['admin_id'], $_SESSION['aid'], $_SESSION['admin_email'], $_SESSION['admin_logged_in'], $_SESSION['aname']);
+        } elseif ($role === 'customer') {
+            unset($_SESSION['customer_id'], $_SESSION['cid'], $_SESSION['customer_email'], $_SESSION['customer_logged_in'], $_SESSION['cname'], $_SESSION['cemail'], $_SESSION['cphone']);
+        }
+    }
+}
+
+if (!function_exists('require_admin_route')) {
+    function require_admin_route() {
+        if (is_admin_user()) {
+            return;
+        }
+
+        $_SESSION['toast'] = [
+            'type' => 'danger',
+            'message' => is_customer_user() ? 'Customers cannot access admin pages.' : 'Please login as admin.',
+        ];
+        header('Location: ' . app_url(is_customer_user() ? 'index.php?page=1' : 'auth.php?role=admin&mode=login'));
+        exit;
+    }
+}
+
+if (!function_exists('require_customer_route')) {
+    function require_customer_route($redirect = '') {
+        if (is_customer_user()) {
+            return;
+        }
+
+        if (is_admin_user()) {
+            $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Admins cannot access customer pages.'];
+            header('Location: ' . app_url('admin/dashboard.php'));
+            exit;
+        }
+
+        $loginUrl = 'auth.php?role=customer&mode=login';
+        if ($redirect !== '') {
+            $loginUrl .= '&redirect=' . urlencode($redirect);
+        }
+        $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Please login as a customer.'];
+        header('Location: ' . app_url($loginUrl));
+        exit;
+    }
+}
+
+if (!function_exists('require_customer_api')) {
+    function require_customer_api() {
+        if (is_customer_user()) {
+            return;
+        }
+
+        http_response_code(is_admin_user() ? 403 : 401);
+        echo json_encode([
+            'success' => false,
+            'error' => is_admin_user() ? 'Admins cannot access customer API routes.' : 'Customer authentication required.',
+        ]);
+        exit;
+    }
+}
+
 if (!function_exists('app_absolute_url')) {
     function app_absolute_url($path = '') {
         $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
@@ -192,6 +266,10 @@ if (empty($_SESSION['customer_logged_in']) && empty($_SESSION['admin_logged_in']
             setcookie('remember_login', '', time() - 3600, '/', '', false, true);
         }
     }
+}
+
+if (is_admin_user() && is_customer_user()) {
+    clear_role_session('customer');
 }
 
 $customerId = $_SESSION['customer_id'] ?? $_SESSION['cid'] ?? 0;

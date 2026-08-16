@@ -1,11 +1,7 @@
 <?php
 require_once 'init.php';
 
-// Check admin authentication
-if (empty($_SESSION['admin_logged_in'])) {
-    header('Location: auth.php?role=admin&mode=login');
-    exit();
-}
+require_admin_route();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: admin_orders.php');

@@ -1,5 +1,6 @@
 <?php
 require_once 'init.php';
+require_customer_route('index.php?page=1');
 
 $productId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 $customerId = $_SESSION['customer_id'] ?? $_SESSION['cid'] ?? 0;

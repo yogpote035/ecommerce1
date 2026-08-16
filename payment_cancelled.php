@@ -1,5 +1,6 @@
 <?php
 require_once 'init.php';
+require_customer_route('Track.php');
 $siteTitle = 'Payment Cancelled';
 $orderId = isset($_GET['order']) ? (int)$_GET['order'] : 0;
 include 'templates/header.php';

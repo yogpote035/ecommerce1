@@ -2,6 +2,10 @@
 require_once 'init.php';
 require_once 'helpers/CategoryHelper.php';
 
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
+
 $siteTitle = 'Shop Categories';
 $categoryHelper = new CategoryHelper($conn);
 $categories = $categoryHelper->getCategoriesHierarchy();
@@ -16,6 +20,12 @@ $notFound = false;
 if ($selectedSlug !== '') {
     $selectedCategory = $categoryHelper->getCategoryBySlug($selectedSlug);
     if ($selectedCategory) {
+        foreach ($categories as $categoryItem) {
+            if (($categoryItem['slug'] ?? '') === $selectedSlug) {
+                $selectedCategory = $categoryItem;
+                break;
+            }
+        }
         $products = $categoryHelper->getProductsByCategory($selectedCategory['id']);
     } else {
         $notFound = true;
@@ -89,7 +99,7 @@ include 'templates/header.php';
             <h2 class="h5 mb-3">Subcategories</h2>
             <div class="d-flex flex-wrap gap-2">
               <?php foreach ($selectedCategory['subcategories'] as $subcategory): ?>
-                <a href="subcategory.php?slug=<?php echo urlencode($subcategory['slug']); ?>" class="btn btn-outline-secondary btn-sm"><?php echo htmlspecialchars($subcategory['name']); ?></a>
+                <a href="subcategory.php?category=<?php echo urlencode($selectedCategory['slug']); ?>&slug=<?php echo urlencode($subcategory['slug']); ?>" class="btn btn-outline-secondary btn-sm"><?php echo htmlspecialchars($subcategory['name']); ?></a>
               <?php endforeach; ?>
             </div>
           </div>

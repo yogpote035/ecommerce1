@@ -12,11 +12,7 @@ $razorpayMode = defined('RAZORPAY_MODE') ? RAZORPAY_MODE : 'unknown';
 $razorpayModeLabel = $razorpayMode === 'live' ? 'LIVE' : ($razorpayMode === 'test' ? 'TEST' : 'UNKNOWN');
 $razorpayEnabled = in_array($razorpayMode, ['test', 'live'], true);
 
-// Redirect to login if not authenticated
-if (!isset($_SESSION['cid']) && !isset($_SESSION['customer_id']) && !isset($_SESSION['customer_logged_in'])) {
-    header('Location: auth.php?redirect=' . urlencode('checkout.php'));
-    exit;
-}
+require_customer_route('checkout.php');
 
 $siteTitle = 'Checkout';
 $errorMessage = '';

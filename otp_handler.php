@@ -131,6 +131,7 @@ if ($action === 'verify_otp') {
         $admin = $stmt->get_result()->fetch_assoc();
         $stmt->close();
 
+        clear_role_session('customer');
         $_SESSION['admin_id'] = $admin['aid'];
         $_SESSION['aname'] = $admin['email'];
         $_SESSION['admin_email'] = $admin['email'];
@@ -147,7 +148,9 @@ if ($action === 'verify_otp') {
     $customer = $stmt->get_result()->fetch_assoc();
     $stmt->close();
 
+    clear_role_session('admin');
     $_SESSION['customer_id'] = $customer['Cid'];
+    $_SESSION['cid'] = $customer['Cid'];
     $_SESSION['customer_email'] = $customer['Cemail'];
     $_SESSION['customer_logged_in'] = true;
     $_SESSION['toast'] = ['type' => 'success', 'message' => 'Customer logged in with OTP successfully.'];

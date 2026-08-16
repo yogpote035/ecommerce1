@@ -3,11 +3,7 @@ require_once 'init.php';
 $siteTitle = 'Admin - Order Management';
 $csrfToken = SecurityHelper::generateCSRFToken();
 
-// Check admin authentication
-if (empty($_SESSION['admin_logged_in'])) {
-    header('Location: auth.php?role=admin&mode=login');
-    exit();
-}
+require_admin_route();
 
 $tableExists = function ($table) use ($conn) {
     $stmt = mysqli_prepare($conn, 'SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?');

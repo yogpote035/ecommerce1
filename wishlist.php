@@ -1,14 +1,9 @@
 <?php
 require_once 'init.php';
+require_customer_route('wishlist.php');
 
 $siteTitle = 'My Wishlist';
 $customerId = $_SESSION['customer_id'] ?? $_SESSION['cid'] ?? 0;
-
-if ($customerId <= 0) {
-    $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Please login as a customer to view your wishlist.'];
-    header('Location: auth.php?role=customer&mode=login&redirect=' . urlencode('wishlist.php'));
-    exit;
-}
 
 $itemsPerPage = PaginationHelper::PER_PAGE;
 $currentPage = PaginationHelper::currentPage();

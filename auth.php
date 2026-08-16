@@ -1,5 +1,14 @@
 <?php
 require_once 'init.php';
+if (is_admin_user()) {
+    header('Location: ' . app_url('admin/dashboard.php'));
+    exit;
+}
+if (is_customer_user()) {
+    header('Location: ' . app_url('index.php?page=1'));
+    exit;
+}
+
 $siteTitle = 'Account Access';
 $csrf_token = SecurityHelper::generateCSRFToken();
 include 'templates/header.php';
