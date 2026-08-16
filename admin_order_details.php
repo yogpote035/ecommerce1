@@ -103,6 +103,16 @@ if ($hasPaymentLogs) {
     mysqli_stmt_close($paymentLogStmt);
 }
 
+$statusDefaultMessages = [
+    'Pending' => 'Order received and waiting for confirmation.',
+    'Confirmed' => 'Payment received and order confirmed.',
+    'Packed' => 'Order packed and ready for dispatch.',
+    'Shipped' => 'Order shipped and is on the way.',
+    'Out For Delivery' => 'Order is out for delivery today.',
+    'Delivered' => 'Order delivered successfully to the customer.',
+    'Cancelled' => 'Order cancelled by the admin.',
+];
+
 include 'templates/header.php';
 ?>
 
@@ -249,6 +259,39 @@ include 'templates/header.php';
                         </div>
                         <button type="submit" class="btn btn-primary btn-block">Update Status</button>
                     </form>
+                    <script>
+                        const statusDefaultMessages = <?php echo json_encode($statusDefaultMessages, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
+                        const statusSelect = document.getElementById('status');
+                        const notesField = document.getElementById('notes');
+
+                        function applyStatusDefaultMessage() {
+                            const currentStatus = statusSelect.value;
+                            if (!currentStatus || !statusDefaultMessages[currentStatus]) {
+                                return;
+                            }
+
+                            const currentValue = notesField.value.trim();
+                            if (!currentValue || currentValue === statusDefaultMessages[statusSelect.dataset.previousStatus || currentStatus]) {
+                                notesField.value = statusDefaultMessages[currentStatus];
+                            }
+                            statusSelect.dataset.previousStatus = currentStatus;
+                        }
+
+                        if (statusSelect && notesField) {
+                            const initialStatus = statusSelect.value;
+                            statusSelect.dataset.previousStatus = initialStatus;
+                            notesField.value = statusDefaultMessages[initialStatus] || notesField.value;
+
+                            statusSelect.addEventListener('change', function () {
+                                const selectedStatus = this.value;
+                                const defaultMessage = statusDefaultMessages[selectedStatus] || '';
+                                if (defaultMessage) {
+                                    notesField.value = defaultMessage;
+                                }
+                                this.dataset.previousStatus = selectedStatus;
+                            });
+                        }
+                    </script>
                 </div>
             </div>
 

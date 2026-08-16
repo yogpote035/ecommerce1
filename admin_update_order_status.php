@@ -22,16 +22,30 @@ $redirect = preg_match('/^[A-Za-z0-9_\/?.=&%-]+$/', $redirect) ? $redirect : '';
 $fallbackRedirect = $oid > 0 ? 'admin_order_details.php?oid=' . $oid : 'admin_orders.php';
 $redirectUrl = $redirect !== '' ? $redirect : $fallbackRedirect;
 
-if (!$oid || !$status || trim($notes) === '') {
-    $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Invalid order, status, or missing notes'];
-    header('Location: ' . $redirectUrl);
-    exit();
-}
+$statusDefaultMessages = [
+    'Pending' => 'Order received and waiting for confirmation.',
+    'Confirmed' => 'Payment received and order confirmed.',
+    'Packed' => 'Order packed and ready for dispatch.',
+    'Shipped' => 'Order shipped and is on the way.',
+    'Out For Delivery' => 'Order is out for delivery today.',
+    'Delivered' => 'Order delivered successfully to the customer.',
+    'Cancelled' => 'Order cancelled by the admin.',
+];
 
 // Validate status
 $validStatuses = ['Pending', 'Confirmed', 'Packed', 'Shipped', 'Out For Delivery', 'Delivered', 'Cancelled'];
 if (!in_array($status, $validStatuses)) {
     $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Invalid status value'];
+    header('Location: ' . $redirectUrl);
+    exit();
+}
+
+if ($notes === '' && isset($statusDefaultMessages[$status])) {
+    $notes = $statusDefaultMessages[$status];
+}
+
+if (!$oid || !$status || trim($notes) === '') {
+    $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Invalid order, status, or missing notes'];
     header('Location: ' . $redirectUrl);
     exit();
 }
