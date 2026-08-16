@@ -214,8 +214,7 @@ include 'templates/header.php';
                                         echo '<td>' . ($createdAt ? date('M d, Y', strtotime($createdAt)) : 'N/A') . '</td>';
                                         echo '<td>';
                                         echo '<div class="action-buttons mb-2">';
-                                        echo '<a href="admin_order_details.php?oid=' . $row['oid'] . '" class="btn btn-sm btn-info">View</a>';
-                                        echo '<a href="admin_order_details.php?oid=' . $row['oid'] . '#status-update" class="btn btn-sm btn-outline-secondary">Details</a>';
+                                        echo '<a href="admin_order_details.php?oid=' . $row['oid'] . '" class="btn btn-sm btn-info">View and Edit Status</a>';
                                         echo '</div>';
                                         echo '<form method="post" action="admin_update_order_status.php" class="order-status-inline-form">';
                                         echo '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($csrfToken) . '">';
@@ -229,7 +228,7 @@ include 'templates/header.php';
                                             echo '<option value="' . htmlspecialchars($statusOption) . '"' . $selected . '>' . htmlspecialchars($statusOption) . '</option>';
                                         }
                                         echo '</select>';
-                                        echo '<div class="input-group-append"><button type="submit" class="btn btn-warning">Update</button></div>';
+                                        echo '<div class="input-group-append"><button type="submit" class="btn btn-warning">Edit status</button></div>';
                                         echo '</div>';
                                         echo '</form>';
                                         echo '</td>';
