@@ -22,8 +22,8 @@ $redirect = preg_match('/^[A-Za-z0-9_\/?.=&%-]+$/', $redirect) ? $redirect : '';
 $fallbackRedirect = $oid > 0 ? 'admin_order_details.php?oid=' . $oid : 'admin_orders.php';
 $redirectUrl = $redirect !== '' ? $redirect : $fallbackRedirect;
 
-if (!$oid || !$status) {
-    $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Invalid order or status'];
+if (!$oid || !$status || trim($notes) === '') {
+    $_SESSION['toast'] = ['type' => 'danger', 'message' => 'Invalid order, status, or missing notes'];
     header('Location: ' . $redirectUrl);
     exit();
 }

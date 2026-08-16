@@ -463,10 +463,20 @@ form.d-inline-block + form.d-inline-block,
   color: var(--text-primary);
 }
 
+.tracking-step.is-cancelled {
+  color: #dc3545;
+}
+
 .tracking-step.is-complete .tracking-dot {
   border-color: var(--primary);
   background: var(--primary);
   box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
+}
+
+.tracking-step.is-cancelled .tracking-dot {
+  border-color: #dc3545;
+  background: #dc3545;
+  box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.14);
 }
 
 .tracking-content {

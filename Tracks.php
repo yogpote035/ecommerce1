@@ -182,7 +182,7 @@ if ($orderId > 0) {
           </p>
         </div>
         <div class="col-md-4 text-md-right mt-3 mt-md-0">
-          <span class="badge badge-pill badge-primary tracking-status-badge"><?php echo htmlspecialchars($latestStatus); ?></span>
+          <span class="badge badge-pill <?php echo $latestStatus === 'Cancelled' ? 'badge-danger' : 'badge-primary'; ?> tracking-status-badge"><?php echo htmlspecialchars($latestStatus); ?></span>
         </div>
       </div>
     </div>
@@ -191,9 +191,10 @@ if ($orderId > 0) {
       <?php foreach ($statusSteps as $index => $step): ?>
         <?php
           $isComplete = $index <= $latestIndex;
+          $isCancelledStep = $latestStatus === 'Cancelled' && $step === 'Cancelled';
           $log = $logs[$step] ?? null;
         ?>
-        <div class="tracking-step <?php echo $isComplete ? 'is-complete' : ''; ?>">
+        <div class="tracking-step <?php echo $isComplete ? 'is-complete' : ''; ?><?php echo $isCancelledStep ? ' is-cancelled' : ''; ?>">
           <div class="tracking-dot"></div>
           <div class="tracking-content">
             <h3 class="h6 mb-1"><?php echo htmlspecialchars($step); ?></h3>
@@ -237,7 +238,7 @@ foreach ($orders as $row) {
     echo '<td>Rs ' . number_format((float) $row['cost'], 2) . '</td>';
     echo '<td>' . htmlspecialchars($row['payment_method'] ?? 'COD') . '</td>';
     echo '<td>' . htmlspecialchars($row['destination'] ?? 'N/A') . '</td>';
-    echo '<td><span class="badge badge-pill badge-primary">' . htmlspecialchars($latestStatus) . '</span></td>';
+    echo '<td><span class="badge badge-pill ' . ($latestStatus === 'Cancelled' ? 'badge-danger' : 'badge-primary') . '">' . htmlspecialchars($latestStatus) . '</span></td>';
     echo '<td><a class="btn btn-sm btn-outline-primary" href="Track.php?order=' . (int) $row['oid'] . '">View</a></td>';
     echo '</tr>';
 }
