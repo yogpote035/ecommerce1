@@ -169,7 +169,8 @@ include 'templates/header.php';
       <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
       <input type="hidden" name="product_id" value="<?php echo $productId; ?>">
       <input type="hidden" name="action" value="upload">
-      <input type="file" name="images[]" class="form-control-file mb-3" accept="image/*" multiple required>
+      <input type="file" id="product-image-input" name="images[]" class="form-control-file mb-3" accept="image/*" multiple required>
+      <div id="product-image-preview" class="mb-3"></div>
       <button class="btn btn-primary">Upload</button>
     </form>
   </div>
@@ -208,5 +209,63 @@ include 'templates/header.php';
   <?php endif; ?>
 </div>
 <?php PaginationHelper::render($currentPage, $totalPages, $totalItems, $itemsPerPage, 'images'); ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const imageInput = document.getElementById('product-image-input');
+    const previewWrap = document.getElementById('product-image-preview');
+
+    if (!imageInput || !previewWrap) {
+        return;
+    }
+
+    function renderPreview(files) {
+        previewWrap.innerHTML = '';
+        if (!files || !files.length) {
+            return;
+        }
+
+        const title = document.createElement('div');
+        title.className = 'mb-2 text-muted small font-weight-bold';
+        title.textContent = 'Selected image preview';
+        previewWrap.appendChild(title);
+
+        const list = document.createElement('div');
+        list.className = 'image-preview-grid';
+
+        Array.from(files).forEach(function (file) {
+            if (!file.type || !file.type.startsWith('image/')) {
+                return;
+            }
+
+            const item = document.createElement('div');
+            item.className = 'image-preview-item';
+
+            const img = document.createElement('img');
+            img.alt = file.name;
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+
+            const meta = document.createElement('div');
+            meta.className = 'image-preview-meta';
+            meta.textContent = file.name + ' · ' + Math.round(file.size / 1024) + ' KB';
+
+            item.appendChild(img);
+            item.appendChild(meta);
+            list.appendChild(item);
+        });
+
+        previewWrap.appendChild(list);
+    }
+
+    imageInput.addEventListener('change', function () {
+        renderPreview(this.files);
+    });
+});
+</script>
 
 <?php include 'templates/footer.php'; ?>
