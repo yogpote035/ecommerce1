@@ -179,6 +179,18 @@ include 'templates/header.php';
     border-radius: 6px;
     border: 1px solid #dee2e6;
     padding: 10px 14px;
+    min-height: 48px;
+    line-height: 1.4;
+    font-size: 1rem;
+  }
+
+  select.form-control {
+    height: 48px;
+    padding-top: 0.7rem;
+    padding-bottom: 0.7rem;
+    padding-right: 2.25rem;
+    display: block;
+    background-position: right 0.75rem center;
   }
 
   .form-control:focus {
